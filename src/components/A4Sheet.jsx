@@ -13,11 +13,11 @@ export function A4Sheet({ sheet, headerConfig, isPrintHidden = false, onUpdateIt
   return (
     <View className={`sheet-wrapper ${isPrintHidden ? 'print-hidden-sheet' : ''}`}>
       {/* Indikator Layar (Tidak Dicetak) */}
-      <View className="no-print w-full max-w-[210mm] mb-1.5 flex items-center justify-between text-xs text-slate-400 font-sans px-1">
+      <View className="no-print w-full max-w-[210mm] mb-1.5 flex flex-wrap items-center justify-between gap-1 text-[10px] sm:text-xs text-slate-400 font-sans px-1">
         <Text className="font-semibold text-slate-300">
           Lembar #{pageNumber} <span className="text-slate-500">•</span> Ruangan: <span className="text-blue-400 font-bold uppercase">{roomName}</span>
         </Text>
-        <Text className="text-slate-400 font-mono text-[11px]">
+        <Text className="text-slate-400 font-mono text-[10px] sm:text-[11px]">
           {items.length} label di lembar ini <span className="text-slate-600">/</span> {totalRoomItems} total
         </Text>
       </View>

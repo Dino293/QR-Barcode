@@ -78,18 +78,35 @@ export function DataModal({ isOpen, onClose, items, onAddItem, onDeleteItem, def
     }, 4000);
   };
 
+  // Aksesibilitas: Tutup modal dengan tombol Escape
+  React.useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
   return (
-    <View className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-      <View className="bg-slate-900 border border-slate-700 w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <View
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="data-modal-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/75 backdrop-blur-sm animate-fade-in"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <View className="bg-slate-900 border border-slate-700 w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[94vh] sm:max-h-[90vh]">
         {/* HEADER */}
-        <View className="px-5 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-950">
+        <View className="px-4 sm:px-5 py-3 sm:py-4 border-b border-slate-800 flex items-center justify-between bg-slate-950 flex-wrap gap-2">
           <View className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-blue-600/20 text-blue-400 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-blue-600/20 text-blue-400 flex items-center justify-center shrink-0">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
             </div>
             <div>
-              <h2 className="text-sm font-bold text-white">Kelola &amp; Input Data BMN ({items.length} Barang)</h2>
-              <p className="text-[11px] text-slate-400">Pratinjau data, pencarian, dan input data barang baru untuk dibuatkan QR Barcode</p>
+              <h2 id="data-modal-title" className="text-xs sm:text-sm font-bold text-white">Kelola &amp; Input Data BMN ({items.length} Barang)</h2>
+              <p className="text-[10px] sm:text-[11px] text-slate-400">Pratinjau data, pencarian, dan input data barang baru untuk dibuatkan QR Barcode</p>
             </div>
           </View>
 
@@ -99,7 +116,7 @@ export function DataModal({ isOpen, onClose, items, onAddItem, onDeleteItem, def
               <button
                 type="button"
                 onClick={() => setActiveTab("table")}
-                className={`px-3 py-1 rounded-md font-semibold transition cursor-pointer ${
+                className={`px-2.5 sm:px-3 py-1 rounded-md font-semibold transition cursor-pointer text-xs ${
                   activeTab === "table"
                     ? "bg-blue-600 text-white shadow-sm"
                     : "text-slate-400 hover:text-white"
@@ -110,7 +127,7 @@ export function DataModal({ isOpen, onClose, items, onAddItem, onDeleteItem, def
               <button
                 type="button"
                 onClick={() => setActiveTab("input")}
-                className={`px-3 py-1 rounded-md font-semibold transition flex items-center gap-1 cursor-pointer ${
+                className={`px-2.5 sm:px-3 py-1 rounded-md font-semibold transition flex items-center gap-1 cursor-pointer text-xs ${
                   activeTab === "input"
                     ? "bg-emerald-600 text-white shadow-sm"
                     : "text-emerald-400 hover:text-emerald-300"
@@ -120,12 +137,14 @@ export function DataModal({ isOpen, onClose, items, onAddItem, onDeleteItem, def
               </button>
             </div>
 
-            <Pressable
-              onPress={onClose}
-              className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 text-lg font-bold ml-2 cursor-pointer"
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Tutup modal kelola data"
+              className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 text-lg font-bold ml-1 sm:ml-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-blue-500"
             >
               &times;
-            </Pressable>
+            </button>
           </View>
         </View>
 

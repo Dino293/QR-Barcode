@@ -31,26 +31,45 @@ export function PrintModal({ isOpen, onClose, totalSheets, totalItems, activeRoo
     onClose();
   };
 
+  // Aksesibilitas: Tutup modal dengan tombol Escape
+  React.useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
   return (
-    <View className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in no-print">
-      <View className="bg-slate-900 border border-slate-700 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+    <View
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="print-modal-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-sm animate-fade-in no-print"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <View className="bg-slate-900 border border-slate-700 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[94vh]">
         {/* HEADER */}
-        <View className="px-5 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-950">
+        <View className="px-4 sm:px-5 py-3 sm:py-4 border-b border-slate-800 flex items-center justify-between bg-slate-950">
           <View className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-blue-600/20 text-blue-400 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-blue-600/20 text-blue-400 flex items-center justify-center shrink-0">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
             </div>
             <div>
-              <h2 className="text-sm font-bold text-white">Cetak Dokumen Label BMN</h2>
-              <p className="text-[11px] text-slate-400">Pengaturan lembar cetak presisi A4</p>
+              <h2 id="print-modal-title" className="text-xs sm:text-sm font-bold text-white">Cetak Dokumen Label BMN</h2>
+              <p className="text-[10px] sm:text-[11px] text-slate-400">Pengaturan lembar cetak presisi A4</p>
             </div>
           </View>
-          <Pressable
-            onPress={onClose}
-            className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 text-lg font-bold"
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Tutup modal cetak"
+            className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 text-lg font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-blue-500"
           >
             &times;
-          </Pressable>
+          </button>
         </View>
 
         {/* BODY */}

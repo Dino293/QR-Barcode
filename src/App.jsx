@@ -91,6 +91,14 @@ export function App() {
     return sheets.slice(startIdx, startIdx + sheetsPerView);
   }, [sheets, sheetsPerView, workspacePage, printScope]);
 
+  // Responsif: Atur zoom otomatis saat pertama kali dibuka di layar mobile (< 820px)
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth < 820) {
+      const calculatedZoom = Math.min(100, Math.max(30, Math.floor(((window.innerWidth - 28) / 794) * 100)));
+      updateConfig({ zoomLevel: calculatedZoom });
+    }
+  }, []);
+
   // Eksekusi Cetak Cepat
   const handleExecutePrint = (fromSheet, toSheet) => {
     setPrintScope({ from: fromSheet, to: toSheet, isPrinting: true });
@@ -145,20 +153,21 @@ export function App() {
       />
 
       {/* WORKSPACE LEMBAR A4 */}
-      <main className="flex-1 py-6 px-4 overflow-auto flex flex-col items-center">
+      <main role="main" className="flex-1 py-4 sm:py-6 px-2 sm:px-4 overflow-auto flex flex-col items-center w-full">
         {/* NAVIGATOR LEMBAR KERJA DI LAYAR (Mencegah Lag / Browser Freeze) */}
         {sheets.length > 12 && !printScope && (
-          <div className="no-print mb-6 bg-slate-800/90 border border-slate-700/80 px-4 py-2 rounded-xl flex items-center justify-between gap-4 text-xs shadow-lg max-w-3xl w-full">
-            <div className="flex items-center gap-2">
+          <div className="no-print mb-4 sm:mb-6 bg-slate-800/90 border border-slate-700/80 px-3 sm:px-4 py-2 rounded-xl flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 text-xs shadow-lg max-w-3xl w-full">
+            <div className="flex items-center justify-between sm:justify-start gap-2">
               <span className="text-slate-400 font-semibold">Tampilkan di Layar:</span>
               <select
+                aria-label="Pilih jumlah lembar yang dimuat di layar"
                 value={sheetsPerView}
                 onChange={(e) => {
                   const val = e.target.value === "ALL" ? "ALL" : parseInt(e.target.value, 10);
                   setSheetsPerView(val);
                   setWorkspacePage(1);
                 }}
-                className="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-white font-semibold cursor-pointer text-xs"
+                className="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-white font-semibold cursor-pointer text-xs focus-visible:ring-1 focus-visible:ring-blue-400"
               >
                 <option value={8}>8 Lembar / Halaman Layar</option>
                 <option value={12}>12 Lembar / Halaman Layar</option>
@@ -168,23 +177,25 @@ export function App() {
             </div>
 
             {sheetsPerView !== "ALL" && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center justify-between sm:justify-end gap-2">
                 <button
                   type="button"
+                  aria-label="Halaman lembar sebelumnya"
                   disabled={workspacePage <= 1}
                   onClick={() => setWorkspacePage((p) => Math.max(1, p - 1))}
-                  className="px-2.5 py-1 bg-slate-700 hover:bg-slate-600 disabled:opacity-40 rounded text-slate-200 cursor-pointer font-bold"
+                  className="px-2.5 py-1 bg-slate-700 hover:bg-slate-600 disabled:opacity-40 rounded text-slate-200 cursor-pointer font-bold focus-visible:ring-1 focus-visible:ring-blue-400"
                 >
                   &larr; Prev
                 </button>
-                <span className="text-slate-300 font-mono font-bold">
-                  Halaman Lembar: {workspacePage} / {totalWorkspacePages}
+                <span className="text-slate-300 font-mono font-bold text-center">
+                  {workspacePage} / {totalWorkspacePages}
                 </span>
                 <button
                   type="button"
+                  aria-label="Halaman lembar berikutnya"
                   disabled={workspacePage >= totalWorkspacePages}
                   onClick={() => setWorkspacePage((p) => Math.min(totalWorkspacePages, p + 1))}
-                  className="px-2.5 py-1 bg-slate-700 hover:bg-slate-600 disabled:opacity-40 rounded text-slate-200 cursor-pointer font-bold"
+                  className="px-2.5 py-1 bg-slate-700 hover:bg-slate-600 disabled:opacity-40 rounded text-slate-200 cursor-pointer font-bold focus-visible:ring-1 focus-visible:ring-blue-400"
                 >
                   Next &rarr;
                 </button>

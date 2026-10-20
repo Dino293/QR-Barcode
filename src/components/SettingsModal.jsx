@@ -13,30 +13,49 @@ export function SettingsModal({ isOpen, onClose, config, onConfigChange, onReset
     onConfigChange({ [key]: isNaN(num) ? val : num });
   };
 
+  // Aksesibilitas: Tutup modal dengan tombol Escape
+  React.useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
   return (
-    <View className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-      <View className="bg-slate-900 border border-slate-700 w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <View
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="settings-modal-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-sm animate-fade-in"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <View className="bg-slate-900 border border-slate-700 w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[94vh] sm:max-h-[90vh]">
         {/* MODAL HEADER */}
-        <View className="px-5 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-950">
+        <View className="px-4 sm:px-5 py-3 sm:py-4 border-b border-slate-800 flex items-center justify-between bg-slate-950">
           <View className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-blue-600/20 text-blue-400 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-blue-600/20 text-blue-400 flex items-center justify-center shrink-0">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
             </div>
             <div>
-              <h2 className="text-sm font-bold text-white">Pengaturan Presisi Fisik A4 & Label</h2>
-              <p className="text-[11px] text-slate-400">Parameter dalam milimeter (mm) dan poin tipografi (pt)</p>
+              <h2 id="settings-modal-title" className="text-xs sm:text-sm font-bold text-white">Pengaturan Presisi Fisik A4 &amp; Label</h2>
+              <p className="text-[10px] sm:text-[11px] text-slate-400">Parameter dalam milimeter (mm) dan poin tipografi (pt)</p>
             </div>
           </View>
-          <Pressable
-            onPress={onClose}
-            className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 text-lg font-bold"
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Tutup modal pengaturan presisi"
+            className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 text-lg font-bold cursor-pointer focus-visible:ring-2 focus-visible:ring-blue-500"
           >
             &times;
-          </Pressable>
+          </button>
         </View>
 
         {/* MODAL BODY */}
-        <div className="p-5 overflow-y-auto space-y-5 text-xs text-slate-300">
+        <div className="p-4 sm:p-5 overflow-y-auto space-y-4 sm:space-y-5 text-xs text-slate-300">
           {/* MARGIN KERTAS A4 */}
           <div>
             <h3 className="font-bold text-blue-400 mb-2 flex items-center gap-1.5">
