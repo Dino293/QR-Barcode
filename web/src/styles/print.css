@@ -1,0 +1,427 @@
+/**
+ * STANDAR PRESISI KERTAS CETAK A4 & LABEL BMN (FISIK MM)
+ * Kompatibel penuh dengan printer laser, inkjet, dan PDF rendering
+ * Disesuaikan agar presisi tanpa perpotongan pada lembar berikutnya dan tanpa terpotong di sisi kiri
+ */
+
+:root {
+  --page-width: 210mm;
+  --page-height: 297mm;
+  --page-margin-top: 11.14mm;
+  --page-margin-bottom: 3.64mm;
+  --page-margin-left: 4.67mm;
+  --page-margin-right: 4.67mm;
+
+  /* Ukuran Fisik Label */
+  --label-width: 98mm;
+  --label-height: 44mm;
+  --header-height: 14.8mm;
+  --label-col-gap: 4.67mm;
+  --label-row-gap: 3.64mm;
+  --grid-cols: 2;
+
+  /* Ukuran Gambar & Logo */
+  --qr-size: 21mm;
+  --logo-size: 6mm;
+
+  /* Standar Tipografi Spesifikasi */
+  --instansi-font-size: 10.5pt;
+  --satker-font-size: 9pt;
+  --body-font-size: 9pt;
+}
+
+/* Kertas Lembar Kerja A4 di Layar Web */
+.sheet-wrapper {
+  margin-bottom: 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.a4-sheet {
+  width: var(--page-width);
+  height: var(--page-height);
+  min-width: var(--page-width);
+  min-height: var(--page-height);
+  max-width: var(--page-width);
+  max-height: var(--page-height);
+  background-color: #ffffff;
+  box-sizing: border-box;
+  padding-top: var(--page-margin-top);
+  padding-bottom: var(--page-margin-bottom);
+  padding-left: var(--page-margin-left);
+  padding-right: var(--page-margin-right);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Header Kertas A4 (Judul Ruangan & Halaman) Mengambang Absolut di Margin Atas Kertas Cetak */
+.sheet-paper-header {
+  position: absolute;
+  top: 3.8mm;
+  left: var(--page-margin-left);
+  right: var(--page-margin-right);
+  height: 5.5mm;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  z-index: 10;
+  pointer-events: none;
+  line-height: 1;
+}
+
+.sheet-paper-single-title {
+  font-size: 8pt;
+  font-weight: 700;
+  color: #000000;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.8mm;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.sheet-room-tag {
+  font-size: 7.5pt;
+  font-weight: 800;
+  color: #1e3a8a;
+  letter-spacing: 0.4px;
+}
+
+.sheet-room-name {
+  font-weight: 800;
+  color: #000000;
+  text-transform: uppercase;
+}
+
+.sheet-header-bullet {
+  color: #64748b;
+  font-weight: 700;
+  font-size: 8pt;
+}
+
+.sheet-page-info {
+  font-size: 7.5pt;
+  font-weight: 700;
+  color: #334155;
+}
+
+.sheet-count-info {
+  font-size: 7pt;
+  font-weight: 600;
+  color: #64748b;
+}
+
+/* Grid 2 Kolom x 6/7 Baris Label */
+.sheet-grid {
+  display: grid;
+  grid-template-columns: repeat(2, var(--label-width));
+  grid-auto-rows: var(--label-height);
+  column-gap: var(--label-col-gap);
+  row-gap: var(--label-row-gap);
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  align-content: start;
+  justify-content: center;
+}
+
+/* Kartu Label Tunggal: Outline Hitam Tegas Standar BMN */
+.item-label {
+  width: var(--label-width);
+  height: var(--label-height);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  overflow: hidden;
+  position: relative;
+  padding: 1.2mm 2.0mm;
+  border: 1px solid #000000 !important;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Bagian Header Label */
+.label-header {
+  height: var(--header-height);
+  min-height: var(--header-height);
+  max-height: var(--header-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1.2px solid #000000;
+  padding-bottom: 0.8mm;
+  margin-bottom: 0.8mm;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.header-logo-box {
+  width: var(--logo-size);
+  height: var(--logo-size);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.header-logo-box img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.header-text-box {
+  flex: 1;
+  text-align: center;
+  padding: 0 1mm;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  line-height: 1.15;
+}
+
+.instansi-line1,
+.instansi-line2 {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: var(--instansi-font-size);
+  font-weight: 700;
+  color: #000000;
+  letter-spacing: -0.2px;
+}
+
+.satker-code-line {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: var(--satker-font-size);
+  font-weight: 700;
+  color: #000000;
+  margin-top: 0.3mm;
+}
+
+/* Bagian Body Label (Data Kiri & QR Kanan) */
+.label-body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.body-info-left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  padding-right: 1.5mm;
+  overflow: hidden;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.info-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5mm;
+  margin-bottom: 0.8mm;
+}
+
+.info-kode-barang {
+  font-size: var(--body-font-size);
+  font-weight: 700;
+  color: #000000;
+  font-family: "JetBrains Mono", monospace, Arial;
+}
+
+.info-nup {
+  font-size: var(--body-font-size);
+  font-weight: 700;
+  color: #000000;
+  white-space: nowrap;
+}
+
+.info-nama-barang {
+  font-size: var(--body-font-size);
+  font-weight: 700;
+  color: #000000;
+  text-transform: uppercase;
+  line-height: 1.15;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.info-merk-tipe {
+  font-size: calc(var(--body-font-size) - 0.5pt);
+  font-weight: 400;
+  color: #1e293b;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: auto;
+}
+
+.body-qr-right {
+  width: calc(var(--qr-size) + 1mm);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.qr-box {
+  width: var(--qr-size);
+  height: var(--qr-size);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qr-box svg,
+.qr-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* =========================================================
+   ATURAN KHUSUS CETAK PRINTER (@MEDIA PRINT)
+   Presisi millimeter tanpa terpotong di sisi kiri dan tanpa perpotongan di lembar berikutnya
+   ========================================================= */
+@page {
+  size: A4 portrait;
+  margin: 0 !important;
+}
+
+@media print {
+  *, *:before, *:after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  html,
+  body {
+    width: 210mm !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    overflow: visible !important;
+    display: block !important;
+  }
+
+  /* Sembunyikan elemen UI di printer */
+  header,
+  aside,
+  .no-print,
+  .modal-overlay {
+    display: none !important;
+    height: 0 !important;
+    width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    overflow: hidden !important;
+  }
+
+  /* Reset main agar padding px-4 layar tidak menggeser kertas ke kanan (sebab kepotong sisi kiri) */
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+    display: block !important;
+    width: 210mm !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* Reset transform zoom layar pada print agar tidak merusak koordinat render Chromium */
+  .workspace-wrapper {
+    padding: 0 !important;
+    margin: 0 !important;
+    display: block !important;
+    width: 210mm !important;
+    transform: none !important;
+    overflow: visible !important;
+  }
+
+  /* Pembagi halaman lembar A4 fisik (HANYA sheet-wrapper yang melakukan page break) */
+  .sheet-wrapper {
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    display: block !important;
+    width: 210mm !important;
+    height: 297mm !important;
+    page-break-after: always !important;
+    break-after: page !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    overflow: hidden !important;
+  }
+
+  /* Hilangkan kertas kosong di akhir dokumen */
+  .sheet-wrapper:last-child,
+  .sheet-wrapper:last-of-type {
+    page-break-after: auto !important;
+    break-after: auto !important;
+  }
+
+  .sheet-wrapper.print-hidden-sheet {
+    display: none !important;
+  }
+
+  /* Lembar A4 di dalam printer: pas 210mm x 297mm, TIDAK ADA double page break */
+  .a4-sheet {
+    width: 210mm !important;
+    height: 297mm !important;
+    min-height: 297mm !important;
+    max-height: 297mm !important;
+    margin: 0 !important;
+    padding-top: var(--page-margin-top) !important;
+    padding-bottom: var(--page-margin-bottom) !important;
+    padding-left: var(--page-margin-left) !important;
+    padding-right: var(--page-margin-right) !important;
+    box-sizing: border-box !important;
+    border: none !important;
+    box-shadow: none !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-after: auto !important;
+    break-after: auto !important;
+    overflow: hidden !important;
+    background: #ffffff !important;
+    position: relative !important;
+  }
+
+  .sheet-paper-header {
+    position: absolute !important;
+    top: 3.8mm !important;
+    left: var(--page-margin-left) !important;
+    right: var(--page-margin-right) !important;
+    height: 5.5mm !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    visibility: visible !important;
+    z-index: 10 !important;
+  }
+}
