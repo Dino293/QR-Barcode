@@ -13,6 +13,7 @@ import { ScannerModal } from './components/ScannerModal.jsx';
 
 import { usePrintConfig } from './hooks/usePrintConfig.js';
 import { useLabelData } from './hooks/useLabelData.js';
+import { usePwaInstall } from './hooks/usePwaInstall.js';
 
 /**
  * Komponen Utama Aplikasi (App.jsx)
@@ -21,6 +22,7 @@ import { useLabelData } from './hooks/useLabelData.js';
  */
 export function App() {
   const { config, activeLayout, updateConfig, changeLayout, resetConfig } = usePrintConfig();
+  const { installApp, isStandalone } = usePwaInstall();
   const {
     items,
     headerConfig,
@@ -141,6 +143,8 @@ export function App() {
         onOpenScannerModal={() => setIsScannerOpen(true)}
         onResetData={resetToDummy}
         onPrint={() => setIsPrintOpen(true)}
+        onInstallApp={installApp}
+        isStandalone={isStandalone}
       />
 
       {/* SUB-TOOLBAR */}

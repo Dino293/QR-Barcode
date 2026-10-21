@@ -18,7 +18,9 @@ export function Navbar({
   onOpenUploadModal,
   onOpenScannerModal,
   onResetData,
-  onPrint
+  onPrint,
+  onInstallApp,
+  isStandalone
 }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -128,6 +130,17 @@ export function Navbar({
             <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
             <Text>Reset Contoh</Text>
           </Pressable>
+
+          {!isStandalone && onInstallApp && (
+            <Pressable
+              onPress={onInstallApp}
+              className="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-indigo-600/25 hover:bg-indigo-600/35 text-indigo-300 border border-indigo-500/40 transition flex items-center gap-1.5 cursor-pointer shadow-sm focus-visible:ring-2 focus-visible:ring-indigo-400"
+              title="Install aplikasi ini di Android, Windows, atau Mac"
+            >
+              <svg className="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+              <Text>Install App</Text>
+            </Pressable>
+          )}
 
           <Pressable
             onPress={onPrint}
@@ -255,6 +268,17 @@ export function Navbar({
               <svg className="w-4 h-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
               <span>Reset Contoh</span>
             </button>
+
+            {!isStandalone && onInstallApp && (
+              <button
+                type="button"
+                onClick={() => handleMobileAction(onInstallApp)}
+                className="flex items-center gap-2 p-2.5 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/35 text-indigo-300 font-semibold text-xs active:bg-indigo-600/40 text-left cursor-pointer min-h-[44px]"
+              >
+                <svg className="w-4 h-4 shrink-0 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                <span>Install Aplikasi</span>
+              </button>
+            )}
 
             <button
               type="button"
