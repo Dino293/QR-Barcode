@@ -99,6 +99,25 @@ export function HeaderModal({ isOpen, onClose, headerConfig, onSaveHeaderConfig 
             />
           </div>
 
+          <div>
+            <label className="block text-[11px] font-bold text-slate-400 mb-1">Format Data QR Code Label:</label>
+            <select
+              value={form.qrMode || "data"}
+              onChange={(e) => setForm({ ...form, qrMode: e.target.value })}
+              className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-white text-xs font-semibold"
+            >
+              <option value="data">
+                QR Data BMN Lengkap (Nama, Kode, NUP, Merk, Lokasi) — Rekomendasi Scanner Gun
+              </option>
+              <option value="siman">
+                QR Gambar SIMAN Asli (Hash Internal SIMAN)
+              </option>
+            </select>
+            <p className="text-[10px] text-slate-400 mt-1">
+              Mode QR Data BMN Lengkap memungkinkan pemindai kamera &amp; barcode scanner gun langsung membaca 5 data barang secara mandiri dan offline.
+            </p>
+          </div>
+
           <View className="pt-3 border-t border-slate-800 flex items-center justify-end gap-2">
             <Pressable
               onPress={onClose}

@@ -6,7 +6,8 @@ export const DEFAULT_HEADER_CONFIG = {
   instansiLine1: "KEMENTERIAN PENDIDIKAN DASAR DAN",
   instansiLine2: "MENENGAH",
   satkerCode: "138041000693242000KD",
-  logoUrl: "images.png"
+  logoUrl: "images.png",
+  qrMode: "data" // "data" (Nama, Kode, NUP, Merk, Lokasi) | "siman" (SIMAN image)
 };
 
 export const DEFAULT_PRINT_CONFIG = {

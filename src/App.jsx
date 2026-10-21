@@ -313,8 +313,18 @@ export function App() {
         onClose={() => setIsScannerOpen(false)}
         items={items}
         onSelectItem={(item) => {
+          if (item?.fromPayload) {
+            const exists = items.some(
+              (it) =>
+                String(it.kode_barang) === String(item.kode_barang) &&
+                String(it.nup) === String(item.nup)
+            );
+            if (!exists) {
+              addItem(item);
+            }
+          }
           setActiveRoomFilter("ALL");
-          setSearchQuery(item.kode_barang);
+          setSearchQuery(item.kode_barang || item.nama_barang || "");
         }}
       />
     </View>

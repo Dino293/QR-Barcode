@@ -1,13 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, Image } from './primitives/index.jsx';
 import { generateQRCodeSVG } from '../utils/qrEngine.js';
+import { buildBmnQrPayload } from '../utils/bmnScanner.js';
 
 /**
  * Komponen Kartu Label BMN (LabelCard)
  * Menampilkan label berstandar presisi dengan logo, teks instansi, kode satker,
- * data barang, serta QR Code SIMAN atau offline SVG generator.
+ * data barang, serta QR Code BMN mandiri beresolusi tajam (Nama, Kode, NUP, Merk, Lokasi).
  */
-export function LabelCard({ item, headerConfig, showBorder = false, onUpdate }) {
+export function LabelCard({ item, headerConfig = {}, showBorder = false, onUpdate }) {
   const [imgError, setImgError] = useState(false);
 
   // Resolusi Satker & Tahun
@@ -20,24 +21,28 @@ export function LabelCard({ item, headerConfig, showBorder = false, onUpdate }) 
     return code;
   }, [item.kode_satker, item.tahun, headerConfig.satkerCode]);
 
-  // Resolusi URL Gambar QR SIMAN atau SVG Fallback
+  // Payload Lengkap BMN (Nama Barang, Kode Barang, NUP, Merek/Tipe, Lokasi Barang)
+  const bmnPayload = useMemo(() => {
+    return buildBmnQrPayload(item);
+  }, [item]);
+
+  // SVG QR Code tajam & offline berisikan 5 data BMN lengkap
+  const bmnSvg = useMemo(() => {
+    return generateQRCodeSVG(bmnPayload, { size: 85, margin: 1 });
+  }, [bmnPayload]);
+
+  // Resolusi URL Gambar QR SIMAN (jika user memilih mode legacy SIMAN)
   const qrRaw = String(item.custom_barcode || "").trim();
+  const useSiman = headerConfig.qrMode === 'siman';
 
   const qrImageUrl = useMemo(() => {
-    if (!qrRaw) return "";
+    if (!useSiman || !qrRaw) return "";
     if (qrRaw.startsWith("http://") || qrRaw.startsWith("https://") || qrRaw.startsWith("data:")) {
       return qrRaw;
     }
     const cleanPath = qrRaw.replace(/^\/+/, "");
     return `https://app.bpmpjambi.my.id/siman/${cleanPath}`;
-  }, [qrRaw]);
-
-  // Fallback SVG QR jika gambar SIMAN kosong atau gagal dimuat
-  const fallbackSvg = useMemo(() => {
-    if (qrImageUrl && !imgError) return null;
-    const qrPayload = qrRaw || `${item.kode_barang || "BMN"}-${item.nup || "1"}`;
-    return generateQRCodeSVG(qrPayload, { size: 85, margin: 1 });
-  }, [qrImageUrl, imgError, qrRaw, item.kode_barang, item.nup]);
+  }, [qrRaw, useSiman]);
 
   const borderClass = showBorder ? "show-border" : "";
 
@@ -94,8 +99,8 @@ export function LabelCard({ item, headerConfig, showBorder = false, onUpdate }) 
 
         {/* QR CODE KANAN */}
         <View className="body-qr-right">
-          <View className="qr-box">
-            {qrImageUrl && !imgError ? (
+          <View className="qr-box" title={bmnPayload}>
+            {useSiman && qrImageUrl && !imgError ? (
               <Image
                 src={qrImageUrl}
                 alt="QR SIMAN"
@@ -105,8 +110,9 @@ export function LabelCard({ item, headerConfig, showBorder = false, onUpdate }) 
               />
             ) : (
               <div
-                className="w-full h-full flex items-center justify-center"
-                dangerouslySetInnerHTML={{ __html: fallbackSvg }}
+                className="w-full h-full flex items-center justify-center cursor-pointer select-none"
+                dangerouslySetInnerHTML={{ __html: bmnSvg }}
+                title={`QR Barcode BMN:\n${bmnPayload}`}
               />
             )}
           </View>
