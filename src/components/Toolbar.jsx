@@ -1,10 +1,11 @@
 import React from 'react';
 import { View, Text, Pressable } from './primitives/index.jsx';
+import { LocationCombobox } from './LocationCombobox.jsx';
 
 /**
  * Komponen Sub-Toolbar (Toolbar)
  * Responsif dan Adaptif di Semua Ukuran Layar
- * Kontrol filter ruangan, preset format, dimensi P&T mm, dan tombol pintar "Fit Layar"
+ * Kontrol filter ruangan autocomplete, pencarian barang, preset format, dimensi P&T mm, dan tombol pintar "Fit Layar"
  */
 export function Toolbar({
   totalPages,
@@ -50,46 +51,37 @@ export function Toolbar({
 
         {/* KONTROL PENGATURAN */}
         <View className="flex items-center gap-2 sm:gap-2.5 flex-wrap justify-start md:justify-end">
-          {/* FILTER RUANGAN & PENCARIAN */}
-          <div className="flex items-center gap-1.5 text-[11px] bg-slate-900/90 px-2 py-1 rounded-lg border border-indigo-500/30 flex-wrap sm:flex-nowrap">
-            <label htmlFor="room-filter" className="text-indigo-400 font-bold shrink-0">
-              Ruang:
-            </label>
-            <select
-              id="room-filter"
-              aria-label="Filter berdasarkan nama ruangan"
-              value={activeRoomFilter}
-              onChange={(e) => onRoomChange(e.target.value)}
-              className="bg-slate-950 text-indigo-200 border border-slate-700 rounded px-1.5 py-0.5 text-xs font-semibold cursor-pointer max-w-[140px] sm:max-w-[160px] focus-visible:ring-1 focus-visible:ring-indigo-400"
-            >
-              <option value="ALL">Semua Ruangan ({totalItems})</option>
-              {availableRooms.map((r) => (
-                <option key={r.name} value={r.name}>
-                  {r.name} ({r.count})
-                </option>
-              ))}
-            </select>
+          {/* FITUR AUTOCOMPLETE LOKASI / RUANGAN DENGAN DROPDOWN PANAH KEBAWAH */}
+          <LocationCombobox
+            availableRooms={availableRooms}
+            activeRoomFilter={activeRoomFilter}
+            onSelectRoom={onRoomChange}
+            totalItems={totalItems}
+          />
 
-            <div className="relative flex items-center">
-              <input
-                type="text"
-                aria-label="Cari barang atau kode barang"
-                value={searchQuery}
-                onChange={(e) => onSearchChange(e.target.value)}
-                placeholder="Cari..."
-                className="bg-slate-950 text-indigo-200 placeholder-indigo-400/50 border border-slate-700 rounded px-2 py-0.5 text-[11px] w-20 sm:w-24 focus:w-32 transition-all focus-visible:ring-1 focus-visible:ring-indigo-400"
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  aria-label="Hapus kata kunci pencarian"
-                  onClick={() => onSearchChange("")}
-                  className="absolute right-1 text-slate-400 hover:text-white font-bold text-xs cursor-pointer p-0.5"
-                >
-                  &times;
-                </button>
-              )}
-            </div>
+          {/* PENCARIAN BARANG / KODE / NUP */}
+          <div className="relative flex items-center bg-slate-900/90 border border-slate-700 rounded-xl px-2 py-1">
+            <svg className="w-3.5 h-3.5 text-slate-400 mr-1.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              type="text"
+              aria-label="Cari barang atau kode barang"
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder="Cari Barang / Kode..."
+              className="bg-transparent text-slate-100 placeholder:text-slate-400 text-xs w-24 sm:w-28 md:w-36 focus:w-44 transition-all focus:outline-none"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                aria-label="Hapus kata kunci pencarian"
+                onClick={() => onSearchChange("")}
+                className="text-slate-400 hover:text-white font-bold text-xs cursor-pointer p-0.5"
+              >
+                &times;
+              </button>
+            )}
           </div>
 
           {/* FORMAT SUSUNAN 12 VS 14 */}

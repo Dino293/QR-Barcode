@@ -329,7 +329,7 @@
    Presisi millimeter tanpa terpotong di sisi kiri dan tanpa perpotongan di lembar berikutnya
    ========================================================= */
 @page {
-  size: A4 portrait;
+  size: 210mm 297mm;
   margin: 0 !important;
 }
 
@@ -387,7 +387,7 @@
     overflow: visible !important;
   }
 
-  /* Pembagi halaman lembar A4 fisik (HANYA sheet-wrapper yang melakukan page break) */
+  /* Pembagi halaman lembar A4 fisik (HANYA sheet-wrapper yang memicu page break) */
   .sheet-wrapper {
     margin: 0 !important;
     padding: 0 !important;
@@ -395,12 +395,14 @@
     border: none !important;
     display: block !important;
     width: 210mm !important;
-    height: 297mm !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
     page-break-after: always !important;
     break-after: page !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
-    overflow: hidden !important;
+    overflow: visible !important;
   }
 
   /* Hilangkan kertas kosong di akhir dokumen */
@@ -414,13 +416,13 @@
     display: none !important;
   }
 
-  /* Lembar A4 di dalam printer: pas 210mm x 297mm, TIDAK ADA double page break */
+  /* Lembar A4 di dalam printer: 210mm x 296mm (buffer 1mm mencegah pembulatan sub-pixel di Chromium / Edge yang memicu halaman kosong 2, 4, 6) */
   .a4-sheet {
     width: 210mm !important;
-    height: 297mm !important;
-    min-height: 297mm !important;
-    max-height: 297mm !important;
-    margin: 0 !important;
+    height: 296mm !important;
+    max-height: 296mm !important;
+    min-height: 0 !important;
+    margin: 0 auto !important;
     padding-top: var(--page-margin-top) !important;
     padding-bottom: var(--page-margin-bottom) !important;
     padding-left: var(--page-margin-left) !important;
