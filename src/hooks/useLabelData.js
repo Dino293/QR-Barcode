@@ -1,9 +1,10 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { DUMMY_ITEMS, DEFAULT_HEADER_CONFIG } from '../utils/defaultData.js';
+import { fetchAllBmnFromSupabase, testSupabaseConnection } from '../utils/supabaseClient.js';
 
 /**
  * Hook untuk Manajemen Dataset Label BMN
- * Mengatur filter ruangan, pencarian instan, dan paginasi lembar A4 secara sekuensial rapat (tanpa jeda/jarak)
+ * Terintegrasi penuh dengan Cloud Supabase PostgreSQL & Local Storage
  */
 export function useLabelData(rowsPerPage = 6) {
   const [items, setItems] = useState(() => {
@@ -26,6 +27,72 @@ export function useLabelData(rowsPerPage = 6) {
 
   const [activeRoomFilter, setActiveRoomFilter] = useState("ALL");
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Status Koneksi Cloud Supabase
+  const [cloudStatus, setCloudStatus] = useState({
+    isConnected: false,
+    totalCloudItems: 0,
+    isLoading: false,
+    progressText: ""
+  });
+
+  // Periksa koneksi Supabase saat pertama kali dimuat
+  useEffect(() => {
+    let isMounted = true;
+    testSupabaseConnection().then((res) => {
+      if (isMounted) {
+        setCloudStatus((prev) => ({
+          ...prev,
+          isConnected: res.connected,
+          totalCloudItems: res.count
+        }));
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Muat data langsung dari Cloud Supabase (14.359 baris)
+  const loadFromSupabase = useCallback(async () => {
+    setCloudStatus((prev) => ({
+      ...prev,
+      isLoading: true,
+      progressText: "Menghubungkan ke Supabase Cloud..."
+    }));
+
+    try {
+      const cloudItems = await fetchAllBmnFromSupabase((loaded, total) => {
+        setCloudStatus((prev) => ({
+          ...prev,
+          progressText: `Memuat ${loaded.toLocaleString('id-ID')} / ${total.toLocaleString('id-ID')} data...`
+        }));
+      });
+
+      if (cloudItems && cloudItems.length > 0) {
+        setItems(cloudItems);
+        setActiveRoomFilter("ALL");
+        setSearchQuery("");
+      }
+
+      setCloudStatus((prev) => ({
+        ...prev,
+        isLoading: false,
+        progressText: "",
+        totalCloudItems: cloudItems.length
+      }));
+
+      return cloudItems;
+    } catch (err) {
+      console.error("Gagal memuat dari Supabase:", err);
+      setCloudStatus((prev) => ({
+        ...prev,
+        isLoading: false,
+        progressText: `Gagal: ${err.message}`
+      }));
+      throw err;
+    }
+  }, []);
 
   // Daftar ruangan unik beserta jumlah barangnya
   const availableRooms = useMemo(() => {
@@ -181,6 +248,8 @@ export function useLabelData(rowsPerPage = 6) {
     availableRooms,
     filteredItems,
     sheets,
+    cloudStatus,
+    loadFromSupabase,
     addItem,
     updateItem,
     deleteItem,

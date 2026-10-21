@@ -10,6 +10,8 @@ export function Navbar({
   totalItems,
   headerConfig,
   activeLayout,
+  cloudStatus,
+  onLoadFromCloud,
   onOpenHeaderModal,
   onOpenDataModal,
   onOpenSequenceModal,
@@ -86,6 +88,18 @@ export function Navbar({
             <Text>Auto Urut NUP</Text>
           </Pressable>
 
+          {cloudStatus?.isConnected && (
+            <Pressable
+              onPress={onLoadFromCloud}
+              disabled={cloudStatus?.isLoading}
+              className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-950/80 hover:bg-emerald-900/80 text-emerald-300 border border-emerald-500/40 transition flex items-center gap-1.5 cursor-pointer shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500 disabled:opacity-50"
+              title="Sinkronkan seluruh 14.359 data dari Cloud Supabase"
+            >
+              <span className={`w-2 h-2 rounded-full ${cloudStatus?.isLoading ? 'bg-amber-400 animate-spin' : 'bg-emerald-400 animate-pulse'}`}></span>
+              <Text>{cloudStatus?.isLoading ? (cloudStatus.progressText || "Memuat...") : `Cloud (${cloudStatus?.totalCloudItems || 14359})`}</Text>
+            </Pressable>
+          )}
+
           <Pressable
             onPress={onOpenUploadModal}
             aria-haspopup="dialog"
@@ -154,6 +168,18 @@ export function Navbar({
           className="lg:hidden border-t border-slate-800 bg-slate-900/98 px-3 py-3 animate-fade-in shadow-2xl"
         >
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {cloudStatus?.isConnected && (
+              <button
+                type="button"
+                onClick={() => handleMobileAction(onLoadFromCloud)}
+                disabled={cloudStatus?.isLoading}
+                className="flex items-center gap-2 p-2.5 rounded-xl bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-300 font-semibold text-xs active:bg-emerald-900 text-left cursor-pointer min-h-[44px]"
+              >
+                <span className={`w-2 h-2 rounded-full ${cloudStatus?.isLoading ? 'bg-amber-400 animate-spin' : 'bg-emerald-400 animate-pulse'} shrink-0`}></span>
+                <span className="truncate">{cloudStatus?.isLoading ? (cloudStatus.progressText || "Memuat...") : `Cloud (${cloudStatus?.totalCloudItems || 14359})`}</span>
+              </button>
+            )}
+
             <button
               type="button"
               onClick={() => handleMobileAction(onOpenDataModal)}

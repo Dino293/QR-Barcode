@@ -30,6 +30,8 @@ export function App() {
     availableRooms,
     filteredItems,
     sheets,
+    cloudStatus,
+    loadFromSupabase,
     addItem,
     updateItem,
     deleteItem,
@@ -128,6 +130,8 @@ export function App() {
         totalItems={items.length}
         headerConfig={headerConfig}
         activeLayout={activeLayout}
+        cloudStatus={cloudStatus}
+        onLoadFromCloud={loadFromSupabase}
         onOpenHeaderModal={() => setIsHeaderOpen(true)}
         onOpenDataModal={() => setIsDataOpen(true)}
         onOpenSequenceModal={() => setIsSequenceOpen(true)}
@@ -277,6 +281,8 @@ export function App() {
         isOpen={isUploadOpen}
         onClose={() => setIsUploadOpen(false)}
         onLoadDataset={loadDataset}
+        onLoadFromCloud={loadFromSupabase}
+        cloudStatus={cloudStatus}
       />
 
       <DataModal
