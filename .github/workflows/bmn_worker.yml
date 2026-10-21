@@ -1,0 +1,65 @@
+name: BMN Background Worker & Cloud Automation
+
+on:
+  # 1. Jadwal Otomatis (Setiap Senin jam 01:00 UTC = 08:00 WIB Pagi)
+  schedule:
+    - cron: '0 1 * * 1'
+
+  # 2. Trigger Manual dengan 1 Klik dari GitHub UI / HP
+  workflow_dispatch:
+    inputs:
+      task_type:
+        description: 'Pilih Tugas yang Ingin Dijalankan'
+        required: true
+        default: 'SYNC_SIMAN'
+        type: choice
+        options:
+          - 'SYNC_SIMAN'
+          - 'TEST_NOTIFIKASI'
+      email_target:
+        description: 'Email Penerima Laporan'
+        required: false
+        default: 'muhindra293@gmail.com'
+
+jobs:
+  run-worker:
+    name: Eksekusi Koki Worker Cloud
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pika requests supabase
+
+      - name: Kirim Nota Tugas ke RabbitMQ Cloud
+        env:
+          RABBITMQ_URL: ${{ secrets.RABBITMQ_URL || 'amqps://vvyocvyd:8KDgt2Xoq5DFbnKOo9xQWlRmUf5CatJd@armadillo.rmq.cloudamqp.com/vvyocvyd' }}
+        run: |
+          TASK="${{ github.event.inputs.task_type || 'SYNC_SIMAN' }}"
+          EMAIL="${{ github.event.inputs.email_target || 'muhindra293@gmail.com' }}"
+          echo ">>> Mengirim tugas $TASK ke RabbitMQ untuk penerima $EMAIL..."
+          python scripts/kirim_tugas.py --tipe "$TASK" --email "$EMAIL"
+
+      - name: Jalankan Koki Worker (Proses & Kirim Email Laporan)
+        env:
+          RABBITMQ_URL: ${{ secrets.RABBITMQ_URL || 'amqps://vvyocvyd:8KDgt2Xoq5DFbnKOo9xQWlRmUf5CatJd@armadillo.rmq.cloudamqp.com/vvyocvyd' }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST || 'sandbox.smtp.mailtrap.io' }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT || '2525' }}
+          SMTP_USER: ${{ secrets.SMTP_USER || '250ddce561818d' }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS || 'e5fd7ece0032a6' }}
+          DEFAULT_RECEIVER: ${{ github.event.inputs.email_target || 'muhindra293@gmail.com' }}
+        run: |
+          echo ">>> Menjalankan koki worker..."
+          python scripts/koki_worker.py --once

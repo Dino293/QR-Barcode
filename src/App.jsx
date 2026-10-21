@@ -9,6 +9,7 @@ import { UploadModal } from './components/UploadModal.jsx';
 import { DataModal } from './components/DataModal.jsx';
 import { SequenceModal } from './components/SequenceModal.jsx';
 import { PrintModal } from './components/PrintModal.jsx';
+import { ScannerModal } from './components/ScannerModal.jsx';
 
 import { usePrintConfig } from './hooks/usePrintConfig.js';
 import { useLabelData } from './hooks/useLabelData.js';
@@ -47,6 +48,7 @@ export function App() {
   const [isDataOpen, setIsDataOpen] = useState(false);
   const [isSequenceOpen, setIsSequenceOpen] = useState(false);
   const [isPrintOpen, setIsPrintOpen] = useState(false);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
 
   // Workspace Pagination (Untuk performa ultra-lancar saat dataset memiliki ribuan baris)
   const [workspacePage, setWorkspacePage] = useState(1);
@@ -136,6 +138,7 @@ export function App() {
         onOpenDataModal={() => setIsDataOpen(true)}
         onOpenSequenceModal={() => setIsSequenceOpen(true)}
         onOpenUploadModal={() => setIsUploadOpen(true)}
+        onOpenScannerModal={() => setIsScannerOpen(true)}
         onResetData={resetToDummy}
         onPrint={() => setIsPrintOpen(true)}
       />
@@ -299,6 +302,16 @@ export function App() {
         onClose={() => setIsSequenceOpen(false)}
         onAddBatchItems={handleAddBatch}
         defaultSatker={headerConfig.satkerCode}
+      />
+
+      <ScannerModal
+        isOpen={isScannerOpen}
+        onClose={() => setIsScannerOpen(false)}
+        items={items}
+        onSelectItem={(item) => {
+          setActiveRoomFilter("ALL");
+          setSearchQuery(item.kode_barang);
+        }}
       />
     </View>
   );

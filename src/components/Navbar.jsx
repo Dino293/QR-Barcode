@@ -16,6 +16,7 @@ export function Navbar({
   onOpenDataModal,
   onOpenSequenceModal,
   onOpenUploadModal,
+  onOpenScannerModal,
   onResetData,
   onPrint
 }) {
@@ -88,6 +89,16 @@ export function Navbar({
             <Text>Auto Urut NUP</Text>
           </Pressable>
 
+          <Pressable
+            onPress={onOpenScannerModal}
+            aria-haspopup="dialog"
+            className="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-cyan-600/20 hover:bg-cyan-600/30 text-cyan-300 border border-cyan-500/40 transition flex items-center gap-1.5 cursor-pointer shadow-sm focus-visible:ring-2 focus-visible:ring-cyan-400"
+            title="Pindai barcode stiker BMN menggunakan kamera smartphone atau webcam"
+          >
+            <svg className="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
+            <Text>Scan QR</Text>
+          </Pressable>
+
           {cloudStatus?.isConnected && (
             <Pressable
               onPress={onLoadFromCloud}
@@ -130,6 +141,17 @@ export function Navbar({
 
         {/* MOBILE CONTROLS (Layar < 1024px) */}
         <div className="flex lg:hidden items-center gap-2">
+          {/* Quick Scan Button on Mobile */}
+          <button
+            type="button"
+            onClick={onOpenScannerModal}
+            aria-label="Buka pemindai kamera QR"
+            className="p-2 bg-cyan-600/20 hover:bg-cyan-600/30 text-cyan-300 border border-cyan-500/30 font-bold rounded-lg flex items-center justify-center active:scale-95 transition cursor-pointer"
+            title="Scan QR Barcode"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
+          </button>
+
           {/* Quick Print Button on Mobile */}
           <button
             type="button"
@@ -179,6 +201,15 @@ export function Navbar({
                 <span className="truncate">{cloudStatus?.isLoading ? (cloudStatus.progressText || "Memuat...") : `Cloud (${cloudStatus?.totalCloudItems || 14359})`}</span>
               </button>
             )}
+
+            <button
+              type="button"
+              onClick={() => handleMobileAction(onOpenScannerModal)}
+              className="flex items-center gap-2 p-2.5 rounded-xl bg-cyan-600/15 hover:bg-cyan-600/25 border border-cyan-500/30 text-cyan-300 font-semibold text-xs active:bg-cyan-600/30 text-left cursor-pointer min-h-[44px]"
+            >
+              <svg className="w-4 h-4 shrink-0 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
+              <span>Scan Barcode</span>
+            </button>
 
             <button
               type="button"

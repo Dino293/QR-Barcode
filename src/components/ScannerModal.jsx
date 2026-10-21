@@ -1,0 +1,402 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { Html5Qrcode } from 'html5-qrcode';
+import { View, Text, Pressable } from './primitives/index.jsx';
+import { supabase, formatSupabaseItem } from '../utils/supabaseClient.js';
+
+/**
+ * Komponen Modal Pemindai QR & Barcode Kamera (ScannerModal)
+ * Mendukung kamera smartphone (rear/environment), upload foto QR, audio feedback synthesizer,
+ * dan pencarian instan pada dataset lokal & Cloud Supabase.
+ */
+export function ScannerModal({ isOpen, onClose, items, onSelectItem }) {
+  if (!isOpen) return null;
+
+  const [scannerActive, setScannerActive] = useState(false);
+  const [scannedResult, setScannedResult] = useState(null);
+  const [foundItem, setFoundItem] = useState(null);
+  const [searchingCloud, setSearchingCloud] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [cameras, setCameras] = useState([]);
+  const [activeCameraId, setActiveCameraId] = useState(null);
+
+  const html5QrCodeRef = useRef(null);
+  const scannerContainerId = "qr-reader-container";
+
+  // Web Audio API Synthesizer Beep (Suara "BEEP" sukses scan tanpa perlu download file audio)
+  const playBeep = () => {
+    try {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(880, audioCtx.currentTime); // 880Hz (A5)
+      gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.15);
+    } catch (_) {}
+  };
+
+  // Cari item pada memori atau query ke Supabase
+  const handleDecodedText = async (decodedText) => {
+    playBeep();
+    setScannedResult(decodedText);
+    setErrorMessage("");
+
+    // Hentikan scanner sementara agar tidak scan berulang kali
+    stopScanner();
+
+    const cleanText = decodedText.trim();
+
+    // 1. Cari di dataset memori lokal terlebih dahulu
+    const localMatch = items.find((it) => {
+      const qr = (it.custom_barcode || "").trim();
+      const kode = (it.kode_barang || "").trim();
+      const nup = String(it.nup || "").trim();
+
+      return (
+        (qr && (cleanText === qr || cleanText.includes(qr) || qr.includes(cleanText))) ||
+        cleanText === `${kode}.${nup}` ||
+        cleanText === `${kode}-${nup}` ||
+        cleanText === kode
+      );
+    });
+
+    if (localMatch) {
+      setFoundItem(localMatch);
+      return;
+    }
+
+    // 2. Jika tidak ada di memori, cari di Supabase Cloud
+    setSearchingCloud(true);
+    try {
+      const { data, error } = await supabase
+        .from('bmn_items')
+        .select('*')
+        .or(`custom_barcode.ilike.%${cleanText}%,kode_barang.eq.${cleanText}`)
+        .limit(1);
+
+      if (!error && data && data.length > 0) {
+        setFoundItem(formatSupabaseItem(data[0]));
+      } else {
+        setFoundItem(null);
+      }
+    } catch (err) {
+      console.error("Gagal cari di Supabase:", err);
+      setFoundItem(null);
+    } finally {
+      setSearchingCloud(false);
+    }
+  };
+
+  // Mulai Kamera Scanner
+  const startScanner = async (cameraId = null) => {
+    try {
+      setErrorMessage("");
+      if (!html5QrCodeRef.current) {
+        html5QrCodeRef.current = new Html5Qrcode(scannerContainerId);
+      }
+
+      const availableCams = await Html5Qrcode.getCameras();
+      setCameras(availableCams);
+
+      let targetCamId = cameraId;
+      if (!targetCamId && availableCams.length > 0) {
+        // Utamakan kamera belakang (back/environment)
+        const backCam = availableCams.find((c) =>
+          c.label.toLowerCase().includes("back") ||
+          c.label.toLowerCase().includes("belakang") ||
+          c.label.toLowerCase().includes("environment")
+        );
+        targetCamId = backCam ? backCam.id : availableCams[0].id;
+      }
+      setActiveCameraId(targetCamId);
+
+      const config = {
+        fps: 15,
+        qrbox: { width: 220, height: 220 },
+        aspectRatio: 1.0
+      };
+
+      await html5QrCodeRef.current.start(
+        targetCamId ? targetCamId : { facingMode: "environment" },
+        config,
+        (decodedText) => handleDecodedText(decodedText),
+        () => {} // abaikan callback kegagalan per frame
+      );
+
+      setScannerActive(true);
+    } catch (err) {
+      console.error("Gagal memulai kamera scanner:", err);
+      setErrorMessage("Tidak dapat mengakses kamera. Pastikan izin kamera telah diberikan di browser.");
+      setScannerActive(false);
+    }
+  };
+
+  // Hentikan Kamera Scanner
+  const stopScanner = async () => {
+    if (html5QrCodeRef.current && html5QrCodeRef.current.isScanning) {
+      try {
+        await html5QrCodeRef.current.stop();
+      } catch (err) {
+        console.error("Error stopping scanner:", err);
+      }
+    }
+    setScannerActive(false);
+  };
+
+  // Scan dari Berkas Gambar (Upload QR image)
+  const handleScanFile = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+      if (!html5QrCodeRef.current) {
+        html5QrCodeRef.current = new Html5Qrcode(scannerContainerId);
+      }
+      const decodedText = await html5QrCodeRef.current.scanFile(file, true);
+      handleDecodedText(decodedText);
+    } catch (err) {
+      setErrorMessage("Tidak dapat membaca QR code dari gambar tersebut. Pastikan gambar jelas.");
+    }
+  };
+
+  // Inisialisasi kamera saat modal dibuka
+  useEffect(() => {
+    let timer = setTimeout(() => {
+      startScanner();
+    }, 200);
+
+    return () => {
+      clearTimeout(timer);
+      stopScanner();
+    };
+  }, []);
+
+  // Aksesibilitas: Tutup modal dengan Escape
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        stopScanner();
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
+  const handleResetScan = () => {
+    setScannedResult(null);
+    setFoundItem(null);
+    setErrorMessage("");
+    startScanner(activeCameraId);
+  };
+
+  const handleApplyFilter = () => {
+    if (foundItem && onSelectItem) {
+      onSelectItem(foundItem);
+      stopScanner();
+      onClose();
+    }
+  };
+
+  return (
+    <View
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="scanner-modal-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-fade-in"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          stopScanner();
+          onClose();
+        }
+      }}
+    >
+      <View className="bg-slate-900 border border-slate-700 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[94vh]">
+        {/* HEADER */}
+        <View className="px-4 sm:px-5 py-3 sm:py-4 border-b border-slate-800 flex items-center justify-between bg-slate-950">
+          <View className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-cyan-600/20 text-cyan-400 flex items-center justify-center shrink-0">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
+            </div>
+            <div>
+              <h2 id="scanner-modal-title" className="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
+                <span>Pindai Barcode / QR BMN</span>
+                <span className="px-2 py-0.5 rounded-full text-[9px] font-semibold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                  Kamera HP / Webcam
+                </span>
+              </h2>
+              <p className="text-[10px] sm:text-[11px] text-slate-400">Arahkan kamera ke stiker label BMN untuk mencari data instan</p>
+            </div>
+          </View>
+          <button
+            type="button"
+            onClick={() => {
+              stopScanner();
+              onClose();
+            }}
+            aria-label="Tutup pemindai"
+            className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 text-lg font-bold cursor-pointer"
+          >
+            &times;
+          </button>
+        </View>
+
+        {/* BODY */}
+        <div className="p-4 sm:p-5 space-y-4 overflow-y-auto">
+          {errorMessage && (
+            <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-center justify-between">
+              <span>{errorMessage}</span>
+              <button
+                type="button"
+                onClick={() => startScanner(activeCameraId)}
+                className="underline text-[11px] font-bold hover:text-white cursor-pointer ml-2"
+              >
+                Coba Lagi
+              </button>
+            </div>
+          )}
+
+          {/* VIEWPORT KAMERA SCANNER */}
+          {!scannedResult && (
+            <div className="relative rounded-2xl overflow-hidden bg-black border-2 border-slate-700 aspect-square max-w-[320px] mx-auto flex items-center justify-center shadow-inner">
+              <div id={scannerContainerId} className="w-full h-full"></div>
+
+              {/* Garis Animasi Scan Laser */}
+              {scannerActive && (
+                <div className="absolute inset-x-8 top-1/2 -translate-y-1/2 h-0.5 bg-cyan-400 shadow-[0_0_12px_#22d3ee] animate-pulse pointer-events-none"></div>
+              )}
+            </div>
+          )}
+
+          {/* KONTROL KAMERA & UPLOAD FOTO */}
+          {!scannedResult && (
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800 text-xs">
+              {cameras.length > 1 && (
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[11px] text-slate-400">Kamera:</span>
+                  <select
+                    value={activeCameraId || ""}
+                    onChange={(e) => {
+                      stopScanner();
+                      startScanner(e.target.value);
+                    }}
+                    className="bg-slate-800 border border-slate-700 text-white rounded-lg px-2 py-1 text-xs"
+                  >
+                    {cameras.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.label || `Kamera ${c.id.slice(0, 5)}`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <label className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-xl text-xs font-semibold cursor-pointer transition flex items-center gap-1.5 ml-auto">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                <span>Pilih Foto QR</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleScanFile}
+                  className="hidden"
+                />
+              </label>
+            </div>
+          )}
+
+          {/* HASIL DETEKSI SCAN */}
+          {scannedResult && (
+            <div className="space-y-3 animate-fade-in">
+              <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] text-slate-400 block uppercase font-mono">Kode Terbaca:</span>
+                  <span className="font-mono text-cyan-400 font-bold text-xs break-all">{scannedResult}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleResetScan}
+                  className="px-2.5 py-1 text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 font-semibold cursor-pointer shrink-0"
+                >
+                  Scan Ulang
+                </button>
+              </div>
+
+              {searchingCloud ? (
+                <div className="p-6 text-center text-slate-400 text-xs">
+                  <div className="w-6 h-6 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                  Mencari barang di database Cloud Supabase...
+                </div>
+              ) : foundItem ? (
+                <div className="p-4 rounded-xl bg-gradient-to-br from-cyan-950/40 via-slate-900 to-slate-950 border border-cyan-500/40 shadow-xl space-y-2.5">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <span className="text-[10px] font-semibold text-cyan-400 px-2 py-0.5 rounded-full bg-cyan-950 border border-cyan-800">
+                        BMN DITEMUKAN
+                      </span>
+                      <h3 className="text-sm font-bold text-white mt-1.5">{foundItem.nama_barang}</h3>
+                    </div>
+                    <span className="text-xs font-mono font-bold text-amber-400 bg-amber-950/50 px-2 py-1 rounded-lg border border-amber-800/40 shrink-0">
+                      NUP {foundItem.nup}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-slate-800/80">
+                    <div>
+                      <span className="text-[10px] text-slate-400 block">Kode Barang:</span>
+                      <span className="font-mono text-slate-200 font-semibold">{foundItem.kode_barang}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 block">Tahun / Merk:</span>
+                      <span className="text-slate-200">{foundItem.tahun || "-"} &bull; {foundItem.merk_tipe || "-"}</span>
+                    </div>
+                    <div className="col-span-2">
+                      <span className="text-[10px] text-slate-400 block">Lokasi Ruangan:</span>
+                      <span className="text-cyan-300 font-semibold">{foundItem.ruangan || "Tanpa Ruangan"}</span>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 flex items-center justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={handleResetScan}
+                      className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs rounded-xl font-semibold cursor-pointer"
+                    >
+                      Pindai Lain
+                    </button>
+                    <Pressable
+                      onPress={handleApplyFilter}
+                      className="px-4 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white text-xs rounded-xl font-bold cursor-pointer shadow-lg shadow-cyan-900/30 transition flex items-center gap-1.5"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                      <span>Tampilkan di Lembar Cetak</span>
+                    </Pressable>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 text-center space-y-2">
+                  <p className="text-xs text-rose-400 font-semibold">
+                    Data BMN tidak ditemukan di database untuk kode tersebut.
+                  </p>
+                  <p className="text-[11px] text-slate-400">
+                    Pastikan Anda telah memuat seluruh data dari Cloud Supabase atau Excel.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleResetScan}
+                    className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white text-xs rounded-xl font-semibold cursor-pointer mt-1"
+                  >
+                    Scan Ulang
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </View>
+    </View>
+  );
+}
