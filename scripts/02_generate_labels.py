@@ -150,17 +150,19 @@ print(f"Total {total_records} data berhasil dikelompokkan ke dalam {len(rooms_da
 # 5. Template Helper HTML
 def render_label_html(item):
     satker = str(item.get('kode_satker') or '138041000693242000KD').strip()
+    m_suf = re.search(r'\.(19\d{2}|20\d{2})$', satker)
+    if m_suf:
+        satker = satker[:m_suf.start()].strip()
+
     tahun = str(item.get('tahun') or '').strip()
-    if not tahun and item.get('tgl_perolehan'):
-        m = re.search(r'\b(19\d{2}|20\d{2})\b', str(item.get('tgl_perolehan')))
-        if m:
-            tahun = m.group(1)
+    if not tahun or not re.match(r'^(19\d{2}|20\d{2})$', tahun):
+        if item.get('tgl_perolehan'):
+            m = re.search(r'\b(19\d{2}|20\d{2})\b', str(item.get('tgl_perolehan')))
+            if m:
+                tahun = m.group(1)
 
     if tahun:
-        if satker.endswith(f".{tahun}") or f".{tahun}" in satker:
-            satker_display = satker
-        else:
-            satker_display = f"{satker}.{tahun}"
+        satker_display = f"{satker}.{tahun}"
     else:
         satker_display = satker
 

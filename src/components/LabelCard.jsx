@@ -11,21 +11,37 @@ import { buildBmnQrPayload } from '../utils/bmnScanner.js';
 export function LabelCard({ item, headerConfig = {}, showBorder = false, onUpdate }) {
   const [imgError, setImgError] = useState(false);
 
-  // Resolusi Satker & Tahun
+  // Resolusi Satker & Tahun (Format Baku: [Kode Satker].[Tahun Perolehan])
   const satkerText = useMemo(() => {
-    const code = String(item.kode_satker || headerConfig.satkerCode || "138041000693242000KD").trim();
-    let year = String(item.tahun || "").trim();
-    if (!year && item.tgl_perolehan) {
-      const my = String(item.tgl_perolehan).match(/\b(19\d{2}|20\d{2})\b/);
-      if (my) year = my[1];
+    let rawCode = String(item.kode_satker || headerConfig.satkerCode || "138041000693242000KD").trim();
+    
+    // 1. Bersihkan suffix tahun jika sudah menempel di kode satker (contoh: .2024 atau .2000)
+    let embeddedYear = "";
+    const suffixMatch = rawCode.match(/\.(19\d{2}|20\d{2})$/);
+    if (suffixMatch) {
+      embeddedYear = suffixMatch[1];
+      rawCode = rawCode.slice(0, suffixMatch.index).trim();
     }
-    if (year) {
-      if (code.endsWith(`.${year}`) || code.includes(`.${year}`)) {
-        return code;
-      }
-      return `${code}.${year}`;
+
+    // 2. Cari tahun perolehan dari berbagai field (item.tahun, item.tgl_perolehan, embeddedYear)
+    let resolvedYear = "";
+    if (item.tahun !== undefined && item.tahun !== null && String(item.tahun).trim() !== "") {
+      const my = String(item.tahun).match(/\b(19\d{2}|20\d{2})\b/);
+      if (my) resolvedYear = my[1];
     }
-    return code;
+    if (!resolvedYear && item.tgl_perolehan) {
+      const mt = String(item.tgl_perolehan).match(/\b(19\d{2}|20\d{2})\b/);
+      if (mt) resolvedYear = mt[1];
+    }
+    if (!resolvedYear && embeddedYear) {
+      resolvedYear = embeddedYear;
+    }
+
+    // 3. Tampilkan Satker dengan bubuhan tahun baku
+    if (resolvedYear) {
+      return `${rawCode}.${resolvedYear}`;
+    }
+    return rawCode;
   }, [item.kode_satker, item.tahun, item.tgl_perolehan, headerConfig.satkerCode]);
 
   // Payload Lengkap BMN (Nama Barang, Kode Barang, NUP, Merek/Tipe, Lokasi Barang)

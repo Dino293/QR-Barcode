@@ -10,7 +10,28 @@ export function useLabelData(rowsPerPage = 6) {
   const [items, setItems] = useState(() => {
     try {
       const saved = localStorage.getItem("bmn_items_data");
-      return saved ? JSON.parse(saved) : DUMMY_ITEMS;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map((it) => {
+            let yr = it.tahun;
+            if (!yr && it.tgl_perolehan) {
+              const m = String(it.tgl_perolehan).match(/\b(19\d{2}|20\d{2})\b/);
+              if (m) yr = m[1];
+            }
+            if (!yr && it.kode_satker) {
+              const ms = String(it.kode_satker).match(/\.(19\d{2}|20\d{2})$/);
+              if (ms) yr = ms[1];
+            }
+            return {
+              ...it,
+              tahun: yr || it.tahun || "",
+              merk_tipe: it.merk_tipe || "-"
+            };
+          });
+        }
+      }
+      return DUMMY_ITEMS;
     } catch {
       return DUMMY_ITEMS;
     }
