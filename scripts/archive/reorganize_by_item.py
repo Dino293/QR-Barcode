@@ -55,21 +55,40 @@ def extract_year(tahun_val, tgl_val, satker_val):
     m = re.search(r'\b(19\d{2}|20\d{2})\b', t_str)
     if m:
         return m.group(1)
+
+    if isinstance(tgl_val, (int, float)) and 25000 < tgl_val < 60000:
+        try:
+            from datetime import datetime, timedelta
+            base = datetime(1899, 12, 30)
+            d = base + timedelta(days=tgl_val)
+            return str(d.year)
+        except Exception:
+            pass
+
     d_str = str(tgl_val or '').strip()
     m2 = re.search(r'\b(19\d{2}|20\d{2})\b', d_str)
     if m2:
         return m2.group(1)
+
     s_str = str(satker_val or '').strip()
-    m3 = re.search(r'\b(19\d{2}|20\d{2})\b', s_str)
+    m3 = re.search(r'\.(19\d{2}|20\d{2})\b', s_str)
     if m3:
         return m3.group(1)
     return ''
 
 def render_label_html(item):
-    satker = item.get('kode_satker') or '138041000693242000KD'
-    tahun = item.get('tahun') or ''
-    if tahun and tahun not in satker:
-        satker_display = f"{satker}.{tahun}"
+    satker = str(item.get('kode_satker') or '138041000693242000KD').strip()
+    tahun = str(item.get('tahun') or '').strip()
+    if not tahun and item.get('tgl_perolehan'):
+        m = re.search(r'\b(19\d{2}|20\d{2})\b', str(item.get('tgl_perolehan')))
+        if m:
+            tahun = m.group(1)
+
+    if tahun:
+        if satker.endswith(f".{tahun}") or f".{tahun}" in satker:
+            satker_display = satker
+        else:
+            satker_display = f"{satker}.{tahun}"
     else:
         satker_display = satker
 

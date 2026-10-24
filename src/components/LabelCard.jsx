@@ -13,13 +13,20 @@ export function LabelCard({ item, headerConfig = {}, showBorder = false, onUpdat
 
   // Resolusi Satker & Tahun
   const satkerText = useMemo(() => {
-    const code = item.kode_satker || headerConfig.satkerCode || "138041000693242000KD";
-    const year = item.tahun || "";
-    if (year && !code.includes(year)) {
+    const code = String(item.kode_satker || headerConfig.satkerCode || "138041000693242000KD").trim();
+    let year = String(item.tahun || "").trim();
+    if (!year && item.tgl_perolehan) {
+      const my = String(item.tgl_perolehan).match(/\b(19\d{2}|20\d{2})\b/);
+      if (my) year = my[1];
+    }
+    if (year) {
+      if (code.endsWith(`.${year}`) || code.includes(`.${year}`)) {
+        return code;
+      }
       return `${code}.${year}`;
     }
     return code;
-  }, [item.kode_satker, item.tahun, headerConfig.satkerCode]);
+  }, [item.kode_satker, item.tahun, item.tgl_perolehan, headerConfig.satkerCode]);
 
   // Payload Lengkap BMN (Nama Barang, Kode Barang, NUP, Merek/Tipe, Lokasi Barang)
   const bmnPayload = useMemo(() => {

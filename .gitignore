@@ -19,6 +19,7 @@ dist-ssr/
 # Cache & Temporary Generated Outputs (mencegah repo lambat & batas 100MB GitHub)
 qr_cache/
 output_pdf/
+data/backup/
 
 # Logs
 npm-debug.log*

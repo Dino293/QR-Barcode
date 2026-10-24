@@ -22,14 +22,32 @@ export function formatSupabaseItem(row) {
     roomTitle = `[${kd}] Ruangan ${kd}`;
   }
 
+  let extractedYear = "";
+  if (row.tahun) {
+    const m = String(row.tahun).match(/\b(19\d{2}|20\d{2})\b/);
+    if (m) extractedYear = m[1];
+  }
+  if (!extractedYear && row.tgl_perolehan) {
+    const m = String(row.tgl_perolehan).match(/\b(19\d{2}|20\d{2})\b/);
+    if (m) extractedYear = m[1];
+  }
+  if (!extractedYear && row.kode_satker) {
+    const m = String(row.kode_satker).match(/\.(19\d{2}|20\d{2})\b/);
+    if (m) extractedYear = m[1];
+  }
+
   return {
     id: row.id,
     kode_satker: row.kode_satker || "138041000693242000KD",
-    tahun: String(row.tahun || (row.tgl_perolehan ? String(row.tgl_perolehan).slice(0, 4) : "2024")),
+    tahun: extractedYear || String(row.tahun || "").trim(),
+    tgl_perolehan: row.tgl_perolehan || "",
     kode_barang: String(row.kode_barang || "").trim(),
     nup: String(row.nup || "1").trim(),
     nama_barang: String(row.nama_barang || "Barang BMN").trim(),
     merk_tipe: String(row.merk_tipe || "-").trim(),
+    kode_ruangan: kd,
+    nama_ruangan: nm,
+    nama_bangunan: bg,
     ruangan: roomTitle,
     custom_barcode: row.custom_barcode || "",
     foto_barang_url: row.foto_barang_url || null,

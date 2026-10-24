@@ -12,10 +12,14 @@
  * ========================================================================================
  */
 
-const { spawn } = require('child_process');
-const fs = require('fs');
-const path = require('path');
-const os = require('os');
+import { spawn } from 'child_process';
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Path direktori utama
 const BASE_DIR = path.resolve(__dirname, '..');
@@ -171,7 +175,10 @@ async function main() {
   const tasks = [];
   for (const room of roomFolders) {
     const roomPath = path.join(OUTPUT_DIR, room);
-    const htmlFile = path.join(roomPath, 'template_print.html');
+    let htmlFile = path.join(roomPath, 'template_print.html');
+    if (!fs.existsSync(htmlFile)) {
+      htmlFile = path.join(roomPath, 'cetak_semua_ruangan.html');
+    }
     const outPdf = path.join(OUTPUT_DIR, `${room}.pdf`);
 
     if (fs.existsSync(htmlFile)) {

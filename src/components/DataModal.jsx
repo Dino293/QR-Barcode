@@ -15,12 +15,15 @@ export function DataModal({ isOpen, onClose, items, onAddItem, onDeleteItem, def
 
   // Form State untuk Input Data Baru
   const [form, setForm] = useState({
+    kode_satker: defaultSatker,
+    tahun: new Date().getFullYear().toString(),
     nama_barang: "",
     kode_barang: "",
     nup: "1",
     merk_tipe: "",
+    kode_ruangan: "",
+    nama_ruangan: "",
     ruangan: "",
-    tahun: new Date().getFullYear().toString(),
     custom_barcode: ""
   });
   const [successMsg, setSuccessMsg] = useState("");
@@ -33,7 +36,11 @@ export function DataModal({ isOpen, onClose, items, onAddItem, onDeleteItem, def
         String(it.nama_barang || "").toLowerCase().includes(q) ||
         String(it.kode_barang || "").toLowerCase().includes(q) ||
         String(it.nup || "").toLowerCase().includes(q) ||
-        String(it.ruangan || "").toLowerCase().includes(q)
+        String(it.ruangan || "").toLowerCase().includes(q) ||
+        String(it.kode_ruangan || "").toLowerCase().includes(q) ||
+        String(it.nama_ruangan || "").toLowerCase().includes(q) ||
+        String(it.tahun || "").toLowerCase().includes(q) ||
+        String(it.merk_tipe || "").toLowerCase().includes(q)
     );
   }, [items, query]);
 
@@ -47,14 +54,23 @@ export function DataModal({ isOpen, onClose, items, onAddItem, onDeleteItem, def
       return;
     }
 
+    const kd_r = form.kode_ruangan.trim();
+    const nm_r = form.nama_ruangan.trim();
+    let computedRuangan = form.ruangan.trim();
+    if (!computedRuangan && (kd_r || nm_r)) {
+      computedRuangan = kd_r && nm_r ? `[${kd_r}] ${nm_r}` : (kd_r ? `[${kd_r}] Ruangan ${kd_r}` : nm_r);
+    }
+
     const newItem = {
-      kode_satker: defaultSatker,
-      tahun: form.tahun.trim(),
+      kode_satker: form.kode_satker.trim() || defaultSatker,
+      tahun: form.tahun.trim() || new Date().getFullYear().toString(),
       kode_barang: form.kode_barang.trim(),
       nup: form.nup.trim() || "1",
       nama_barang: form.nama_barang.trim(),
       merk_tipe: form.merk_tipe.trim() || "-",
-      ruangan: form.ruangan.trim() || "Tanpa Ruangan",
+      kode_ruangan: kd_r,
+      nama_ruangan: nm_r,
+      ruangan: computedRuangan || "Tanpa Ruangan",
       custom_barcode: form.custom_barcode.trim()
     };
 
@@ -64,12 +80,15 @@ export function DataModal({ isOpen, onClose, items, onAddItem, onDeleteItem, def
 
     setSuccessMsg(`Barang "${newItem.nama_barang}" berhasil ditambahkan dan QR Barcode telah digenerate!`);
     setForm({
+      kode_satker: newItem.kode_satker,
+      tahun: newItem.tahun,
       nama_barang: "",
       kode_barang: "",
       nup: String(parseInt(newItem.nup, 10) + 1 || 1),
       merk_tipe: "",
+      kode_ruangan: newItem.kode_ruangan,
+      nama_ruangan: newItem.nama_ruangan,
       ruangan: newItem.ruangan,
-      tahun: newItem.tahun,
       custom_barcode: ""
     });
 
@@ -240,15 +259,50 @@ export function DataModal({ isOpen, onClose, items, onAddItem, onDeleteItem, def
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-300 mb-1">Ruangan Penempatan:</label>
+                    <label className="block text-[11px] font-bold text-slate-300 mb-1">Kode Ruangan:</label>
                     <input
                       type="text"
-                      placeholder="Contoh: [02] Ruang Kepala / Aula Mayang"
+                      placeholder="Contoh: D.1.01 atau 02"
+                      value={form.kode_ruangan}
+                      onChange={(e) => setForm({ ...form, kode_ruangan: e.target.value })}
+                      className="w-full bg-slate-900 border border-slate-700 focus:border-emerald-500 rounded-lg px-3 py-1.5 text-white font-mono text-xs outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-300 mb-1">Nama Ruangan:</label>
+                    <input
+                      type="text"
+                      placeholder="Contoh: Kamar 01 / Ruang Kepala"
+                      value={form.nama_ruangan}
+                      onChange={(e) => setForm({ ...form, nama_ruangan: e.target.value })}
+                      className="w-full bg-slate-900 border border-slate-700 focus:border-emerald-500 rounded-lg px-3 py-1.5 text-white text-xs outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-300 mb-1">Ruangan Lengkap / Gedung:</label>
+                    <input
+                      type="text"
+                      placeholder="Otomatis atau manual: [02] Ruang Kepala"
                       value={form.ruangan}
                       onChange={(e) => setForm({ ...form, ruangan: e.target.value })}
                       className="w-full bg-slate-900 border border-slate-700 focus:border-emerald-500 rounded-lg px-3 py-1.5 text-white text-xs outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-300 mb-1">Kode Satker:</label>
+                    <input
+                      type="text"
+                      placeholder="138041000693242000KD"
+                      value={form.kode_satker}
+                      onChange={(e) => setForm({ ...form, kode_satker: e.target.value })}
+                      className="w-full bg-slate-900 border border-slate-700 focus:border-emerald-500 rounded-lg px-3 py-1.5 text-white font-mono text-xs outline-none"
                     />
                   </div>
 
@@ -258,13 +312,13 @@ export function DataModal({ isOpen, onClose, items, onAddItem, onDeleteItem, def
                     </label>
                     <input
                       type="text"
-                      placeholder="Kosongkan untuk otomatis generate QR dari Kode Barang & NUP"
+                      placeholder="Kosongkan untuk otomatis generate QR lengkap (Nama, Kode, NUP, Merk, Lokasi)"
                       value={form.custom_barcode}
                       onChange={(e) => setForm({ ...form, custom_barcode: e.target.value })}
                       className="w-full bg-slate-900 border border-slate-700 focus:border-emerald-500 rounded-lg px-3 py-1.5 text-white font-mono text-xs outline-none"
                     />
                     <span className="text-[10px] text-slate-500 mt-0.5 block">
-                      Jika kosong, sistem akan otomatis menghasilkan SVG QR Code tajam.
+                      Jika kosong, sistem akan otomatis menghasilkan SVG QR Code tajam berisi seluruh info BMN.
                     </span>
                   </div>
                 </div>
@@ -315,18 +369,19 @@ export function DataModal({ isOpen, onClose, items, onAddItem, onDeleteItem, def
                 <thead>
                   <tr className="border-b border-slate-800 text-slate-400 text-[11px]">
                     <th className="py-2 px-2">No</th>
+                    <th className="py-2 px-2">Satker / Tahun</th>
                     <th className="py-2 px-2">Kode Barang</th>
                     <th className="py-2 px-2">NUP</th>
                     <th className="py-2 px-2">Nama Barang</th>
                     <th className="py-2 px-2">Merk / Tipe</th>
-                    <th className="py-2 px-2">Ruangan</th>
+                    <th className="py-2 px-2">Ruangan (Lokasi)</th>
                     <th className="py-2 px-2 text-center">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/60 font-sans">
                   {pageItems.length === 0 ? (
                     <tr>
-                      <td colSpan="7" className="py-8 text-center text-slate-500">
+                      <td colSpan="8" className="py-8 text-center text-slate-500">
                         Tidak ada data yang cocok dengan pencarian "{query}"
                       </td>
                     </tr>
@@ -334,6 +389,10 @@ export function DataModal({ isOpen, onClose, items, onAddItem, onDeleteItem, def
                     pageItems.map((it, idx) => (
                       <tr key={idx} className="hover:bg-slate-800/40 text-slate-200">
                         <td className="py-2 px-2 text-slate-500 font-mono">{(page - 1) * pageSize + idx + 1}</td>
+                        <td className="py-2 px-2 font-mono text-[10px] text-amber-300">
+                          <div>{it.kode_satker || defaultSatker}</div>
+                          <div className="text-slate-400 font-semibold">{it.tahun || "2024"}</div>
+                        </td>
                         <td className="py-2 px-2 font-mono text-blue-300 font-semibold">{it.kode_barang}</td>
                         <td className="py-2 px-2 font-mono font-bold text-emerald-400">{it.nup}</td>
                         <td className="py-2 px-2 font-medium max-w-[200px] truncate" title={it.nama_barang}>
@@ -342,8 +401,13 @@ export function DataModal({ isOpen, onClose, items, onAddItem, onDeleteItem, def
                         <td className="py-2 px-2 text-slate-400 max-w-[150px] truncate" title={it.merk_tipe}>
                           {it.merk_tipe || "-"}
                         </td>
-                        <td className="py-2 px-2 text-slate-400 text-[11px] max-w-[200px] truncate" title={it.ruangan}>
-                          {it.ruangan || "-"}
+                        <td className="py-2 px-2 text-slate-300 text-[11px] max-w-[220px]" title={it.ruangan}>
+                          <div className="font-medium truncate text-white">{it.ruangan || "-"}</div>
+                          {(it.kode_ruangan || it.nama_ruangan) && (
+                            <div className="text-[10px] text-slate-400 font-mono truncate">
+                              [{it.kode_ruangan || "-"}] {it.nama_ruangan || ""} {it.nama_bangunan ? `(${it.nama_bangunan})` : ""}
+                            </div>
+                          )}
                         </td>
                         <td className="py-2 px-2 text-center">
                           <button

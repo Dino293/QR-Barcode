@@ -63,12 +63,23 @@ def extract_year(tahun_val, tgl_val, satker_val):
     m = re.search(r'\b(19\d{2}|20\d{2})\b', t_str)
     if m:
         return m.group(1)
+
+    if isinstance(tgl_val, (int, float)) and 25000 < tgl_val < 60000:
+        try:
+            from datetime import datetime, timedelta
+            base = datetime(1899, 12, 30)
+            d = base + timedelta(days=tgl_val)
+            return str(d.year)
+        except Exception:
+            pass
+
     d_str = str(tgl_val or '').strip()
     m2 = re.search(r'\b(19\d{2}|20\d{2})\b', d_str)
     if m2:
         return m2.group(1)
+
     s_str = str(satker_val or '').strip()
-    m3 = re.search(r'\b(19\d{2}|20\d{2})\b', s_str)
+    m3 = re.search(r'\.(19\d{2}|20\d{2})\b', s_str)
     if m3:
         return m3.group(1)
     return ''
@@ -76,7 +87,7 @@ def extract_year(tahun_val, tgl_val, satker_val):
 # 4. Baca Seluruh Data dari data.xlsx (Sheet: Database)
 excel_path = os.path.join(DATA_DIR, 'data.xlsx')
 print(f"Membaca file data Excel: {excel_path} ...")
-wb = openpyxl.load_workbook(excel_path, read_only=True)
+wb = openpyxl.load_workbook(excel_path, read_only=True, data_only=True)
 ws = wb['Database'] if 'Database' in wb.sheetnames else wb.active
 
 rooms_data = {}
@@ -106,6 +117,7 @@ for row in ws.iter_rows(min_row=2, values_only=True):
     room_folder_name = sanitize_filename(room_title, 65)
 
     satker = str(row[1] or '138041000693242000KD').strip()
+    tgl_perolehan = str(row[9] or '').strip() if len(row) > 9 and row[9] is not None else ''
     tahun = extract_year(row[25] if len(row) > 25 else '', row[9] if len(row) > 9 else '', satker)
     kode_barang = str(row[3] or '-').strip()
     nup = str(row[4] or '1').strip()
@@ -116,6 +128,7 @@ for row in ws.iter_rows(min_row=2, values_only=True):
     item = {
         'kode_satker': satker,
         'tahun': tahun,
+        'tgl_perolehan': tgl_perolehan,
         'kode_barang': kode_barang,
         'nup': nup,
         'nama_barang': nama_barang,
@@ -136,10 +149,18 @@ print(f"Total {total_records} data berhasil dikelompokkan ke dalam {len(rooms_da
 
 # 5. Template Helper HTML
 def render_label_html(item):
-    satker = item.get('kode_satker') or '138041000693242000KD'
-    tahun = item.get('tahun') or ''
-    if tahun and tahun not in satker:
-        satker_display = f"{satker}.{tahun}"
+    satker = str(item.get('kode_satker') or '138041000693242000KD').strip()
+    tahun = str(item.get('tahun') or '').strip()
+    if not tahun and item.get('tgl_perolehan'):
+        m = re.search(r'\b(19\d{2}|20\d{2})\b', str(item.get('tgl_perolehan')))
+        if m:
+            tahun = m.group(1)
+
+    if tahun:
+        if satker.endswith(f".{tahun}") or f".{tahun}" in satker:
+            satker_display = satker
+        else:
+            satker_display = f"{satker}.{tahun}"
     else:
         satker_display = satker
 
@@ -614,34 +635,44 @@ def get_page_head(title, subtitle=""):
 
     @media print {{
       html, body {{
-        background: #ffffff !important;
+        background: transparent !important;
         margin: 0 !important;
         padding: 0 !important;
         width: 210mm !important;
-        height: 297mm !important;
+        height: auto !important;
       }}
       .no-print {{
         display: none !important;
       }}
       .document-workspace {{
         padding: 0 !important;
+        margin: 0 !important;
         gap: 0 !important;
+        display: block !important;
       }}
       .sheet-wrapper {{
         margin: 0 !important;
+        padding: 0 !important;
         page-break-after: always !important;
         break-after: page !important;
-      }}
-      .sheet-wrapper:last-child {{
-        page-break-after: avoid !important;
-        break-after: avoid !important;
-      }}
-      .a4-sheet {{
-        box-shadow: none !important;
-        border: none !important;
-        margin: 0 !important;
         page-break-inside: avoid !important;
         break-inside: avoid !important;
+      }}
+      .sheet-wrapper:last-child,
+      .sheet-wrapper:last-of-type {{
+        page-break-after: auto !important;
+        break-after: auto !important;
+      }}
+      .a4-sheet {{
+        width: 210mm !important;
+        height: 296mm !important;
+        max-height: 296mm !important;
+        box-shadow: none !important;
+        border: none !important;
+        margin: 0 auto !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        overflow: hidden !important;
       }}
       .sheet-paper-header {{
         position: absolute !important;
@@ -734,7 +765,9 @@ for room_folder, r_info in rooms_data.items():
     room_html = get_page_head(room_title, f"{len(items)} Label") + "\n".join(room_pages_html) + get_page_foot()
     with open(os.path.join(room_path, "cetak_semua_ruangan.html"), 'w', encoding='utf-8') as f:
         f.write(room_html)
-    created_files_count += 1
+    with open(os.path.join(room_path, "template_print.html"), 'w', encoding='utf-8') as f:
+        f.write(room_html)
+    created_files_count += 2
 
     # B. Buat subfolder dan template_print.html untuk masing-masing barang (12 label duplikat per lembar A4)
     item_links = []
