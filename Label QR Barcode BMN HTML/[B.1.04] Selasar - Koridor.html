@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>[B.1.04] Selasar/Koridor - Cetak Label BMN A4</title>
+  <style>
+    /* STANDAR PRESISI KERTAS CETAK A4 & LABEL BMN (FISIK MM) */
+    :root {
+      --page-width: 210mm;
+      --page-height: 297mm;
+      --page-margin-top: 11.14mm;
+      --page-margin-bottom: 3.64mm;
+      --page-margin-left: 4.67mm;
+      --page-margin-right: 4.67mm;
+
+      /* Ukuran Fisik Label */
+      --label-width: 98mm;
+      --label-height: 44mm;
+      --header-height: 14.8mm;
+      --label-col-gap: 4.67mm;
+      --label-row-gap: 3.64mm;
+      --grid-cols: 2;
+
+      /* Ukuran Gambar & Logo */
+      --qr-size: 21mm;
+      --logo-size: 6mm;
+
+      /* Standar Tipografi Spesifikasi */
+      --instansi-font-size: 10.5pt;
+      --satker-font-size: 9pt;
+      --body-font-size: 9pt;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    html, body {
+      margin: 0 !important;
+      padding: 0 !important;
+      background: #ffffff !important;
+      color: #000000 !important;
+      font-family: Arial, Helvetica, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Pembagi halaman lembar A4 fisik */
+    .sheet-wrapper {
+      margin: 0 !important;
+      padding: 0 !important;
+      box-shadow: none !important;
+      border: none !important;
+      display: block !important;
+      width: 210mm !important;
+      height: auto !important;
+      min-height: 0 !important;
+      max-height: none !important;
+      page-break-after: always !important;
+      break-after: page !important;
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+      overflow: visible !important;
+    }
+
+    .sheet-wrapper:last-child,
+    .sheet-wrapper:last-of-type {
+      page-break-after: auto !important;
+      break-after: auto !important;
+    }
+
+    /* Lembar A4 di dalam printer: 210mm x 296mm (buffer 1mm mencegah pembulatan sub-pixel di Chromium / Edge yang memicu halaman kosong 2, 4, 6) */
+    .a4-sheet {
+      width: 210mm !important;
+      height: 296mm !important;
+      max-height: 296mm !important;
+      min-height: 0 !important;
+      margin: 0 auto !important;
+      padding-top: var(--page-margin-top) !important;
+      padding-bottom: var(--page-margin-bottom) !important;
+      padding-left: var(--page-margin-left) !important;
+      padding-right: var(--page-margin-right) !important;
+      box-sizing: border-box !important;
+      border: none !important;
+      box-shadow: none !important;
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+      page-break-after: auto !important;
+      break-after: auto !important;
+      overflow: hidden !important;
+      background: #ffffff !important;
+      position: relative !important;
+    }
+
+    /* Header Kertas A4 Mengambang Absolut di Margin Atas Kertas Cetak */
+    .sheet-paper-header {
+      position: absolute !important;
+      top: 3.8mm !important;
+      left: var(--page-margin-left) !important;
+      right: var(--page-margin-right) !important;
+      height: 5.5mm !important;
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: center !important;
+      justify-content: center !important;
+      text-align: center !important;
+      visibility: visible !important;
+      z-index: 10 !important;
+      pointer-events: none;
+      line-height: 1;
+    }
+
+    .sheet-paper-single-title {
+      font-size: 8pt;
+      font-weight: 700;
+      color: #000000;
+      letter-spacing: 0.2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.8mm;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .sheet-room-tag {
+      font-size: 7.5pt;
+      font-weight: 800;
+      color: #1e3a8a;
+      letter-spacing: 0.4px;
+    }
+
+    .sheet-room-name {
+      font-weight: 800;
+      color: #000000;
+      text-transform: uppercase;
+    }
+
+    .sheet-header-bullet {
+      color: #64748b;
+      font-weight: 700;
+      font-size: 8pt;
+    }
+
+    .sheet-page-info {
+      font-size: 7.5pt;
+      font-weight: 700;
+      color: #334155;
+    }
+
+    .sheet-count-info {
+      font-size: 7pt;
+      font-weight: 600;
+      color: #64748b;
+    }
+
+    /* Grid 2 Kolom x 6 Baris Label */
+    .sheet-grid {
+      display: grid;
+      grid-template-columns: repeat(2, var(--label-width));
+      grid-auto-rows: var(--label-height);
+      column-gap: var(--label-col-gap);
+      row-gap: var(--label-row-gap);
+      width: 100%;
+      height: 100%;
+      box-sizing: border-box;
+      align-content: start;
+      justify-content: center;
+    }
+
+    /* Kartu Label Tunggal: Outline Hitam Tegas Standar BMN (98mm x 44mm) */
+    .item-label {
+      width: var(--label-width);
+      height: var(--label-height);
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      background-color: #ffffff;
+      overflow: hidden;
+      position: relative;
+      padding: 1.2mm 2.0mm;
+      border: 1px solid #000000 !important;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    /* Bagian Header Label */
+    .label-header {
+      height: var(--header-height);
+      min-height: var(--header-height);
+      max-height: var(--header-height);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1.2px solid #000000;
+      padding-bottom: 0.8mm;
+      margin-bottom: 0.8mm;
+      flex-shrink: 0;
+      box-sizing: border-box;
+    }
+
+    .header-logo-box {
+      width: var(--logo-size);
+      height: var(--logo-size);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .header-logo-box img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .header-text-box {
+      flex: 1;
+      text-align: center;
+      padding: 0 1mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      line-height: 1.15;
+    }
+
+    .instansi-line1,
+    .instansi-line2 {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: var(--instansi-font-size);
+      font-weight: 700;
+      color: #000000;
+      letter-spacing: -0.2px;
+    }
+
+    .satker-code-line {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: var(--satker-font-size);
+      font-weight: 700;
+      color: #000000;
+      margin-top: 0.3mm;
+    }
+
+    /* Bagian Body Label (Data Kiri & QR Kanan) */
+    .label-body {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+
+    .body-info-left {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100%;
+      padding-right: 1.5mm;
+      overflow: hidden;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .info-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5mm;
+      margin-bottom: 0.8mm;
+    }
+
+    .info-kode-barang {
+      font-size: var(--body-font-size);
+      font-weight: 700;
+      color: #000000;
+      font-family: monospace, Arial;
+    }
+
+    .info-nup {
+      font-size: var(--body-font-size);
+      font-weight: 700;
+      color: #000000;
+      white-space: nowrap;
+    }
+
+    .info-nama-barang {
+      font-size: var(--body-font-size);
+      font-weight: 700;
+      color: #000000;
+      text-transform: uppercase;
+      line-height: 1.15;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .info-merk-tipe {
+      font-size: calc(var(--body-font-size) - 0.5pt);
+      font-weight: 400;
+      color: #1e293b;
+      text-transform: uppercase;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: auto;
+    }
+
+    .body-qr-right {
+      width: calc(var(--qr-size) + 1mm);
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .qr-box {
+      width: var(--qr-size);
+      height: var(--qr-size);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .qr-box svg {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    @page {
+      size: 210mm 297mm;
+      margin: 0 !important;
+    }
+  </style>
+</head>
+<body>
+  
+      <div class="sheet-wrapper">
+        <div class="a4-sheet" id="sheet-1">
+          <!-- HEADER KERTAS FISIK A4 (Mengambang Absolut di Margin Atas Kertas Cetak) -->
+          <div class="sheet-paper-header">
+            <div class="sheet-paper-single-title">
+              <span class="sheet-room-tag">RUANGAN:</span>
+              <span class="sheet-room-name">[B.1.04] Selasar/Koridor</span>
+              <span class="sheet-header-bullet">•</span>
+              <span class="sheet-page-info">HALAMAN 1 / 1</span>
+              <span class="sheet-header-bullet">•</span>
+              <span class="sheet-count-info">3 ITEM DI LEMBAR INI (3 TOTAL)</span>
+            </div>
+          </div>
+
+          <!-- GRID 2 KOLOM LABEL (98mm x 44mm) -->
+          <div class="sheet-grid">
+            
+    <article class="item-label">
+      <header class="label-header">
+        <div class="header-logo-box">
+          <img src="images.png" alt="Logo Kemendikbud">
+        </div>
+        <div class="header-text-box">
+          <div class="instansi-line1">KEMENTERIAN PENDIDIKAN DASAR DAN</div>
+          <div class="instansi-line2">MENENGAH</div>
+          <div class="satker-code-line">138041000693242000KD.2019</div>
+        </div>
+        <div class="header-logo-box" style="visibility: hidden;" aria-hidden="true"></div>
+      </header>
+
+      <div class="label-body">
+        <div class="body-info-left">
+          <div>
+            <div class="info-top-row">
+              <span class="info-kode-barang">3070201003</span>
+              <span class="info-nup">NUP: 1</span>
+            </div>
+            <div class="info-nama-barang" title="Audio/Vidio Comunication">Audio/Vidio Comunication</div>
+          </div>
+          <div class="info-merk-tipe" title="VIDIO WALL 46 INCH">VIDIO WALL 46 INCH</div>
+        </div>
+
+        <div class="body-qr-right">
+          <div class="qr-box" title="QR Barcode BMN">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 55" width="85" height="85" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="#ffffff"/><path d="M1,1h1v1h-1zM2,1h1v1h-1zM3,1h1v1h-1zM4,1h1v1h-1zM5,1h1v1h-1zM6,1h1v1h-1zM7,1h1v1h-1zM11,1h1v1h-1zM15,1h1v1h-1zM17,1h1v1h-1zM18,1h1v1h-1zM20,1h1v1h-1zM21,1h1v1h-1zM25,1h1v1h-1zM30,1h1v1h-1zM31,1h1v1h-1zM32,1h1v1h-1zM33,1h1v1h-1zM38,1h1v1h-1zM39,1h1v1h-1zM40,1h1v1h-1zM41,1h1v1h-1zM42,1h1v1h-1zM43,1h1v1h-1zM47,1h1v1h-1zM48,1h1v1h-1zM49,1h1v1h-1zM50,1h1v1h-1zM51,1h1v1h-1zM52,1h1v1h-1zM53,1h1v1h-1zM1,2h1v1h-1zM7,2h1v1h-1zM11,2h1v1h-1zM12,2h1v1h-1zM14,2h1v1h-1zM16,2h1v1h-1zM17,2h1v1h-1zM20,2h1v1h-1zM22,2h1v1h-1zM23,2h1v1h-1zM24,2h1v1h-1zM25,2h1v1h-1zM26,2h1v1h-1zM33,2h1v1h-1zM34,2h1v1h-1zM37,2h1v1h-1zM41,2h1v1h-1zM43,2h1v1h-1zM44,2h1v1h-1zM47,2h1v1h-1zM53,2h1v1h-1zM1,3h1v1h-1zM3,3h1v1h-1zM4,3h1v1h-1zM5,3h1v1h-1zM7,3h1v1h-1zM9,3h1v1h-1zM10,3h1v1h-1zM11,3h1v1h-1zM12,3h1v1h-1zM13,3h1v1h-1zM14,3h1v1h-1zM16,3h1v1h-1zM20,3h1v1h-1zM22,3h1v1h-1zM23,3h1v1h-1zM25,3h1v1h-1zM28,3h1v1h-1zM30,3h1v1h-1zM33,3h1v1h-1zM36,3h1v1h-1zM37,3h1v1h-1zM38,3h1v1h-1zM39,3h1v1h-1zM40,3h1v1h-1zM44,3h1v1h-1zM47,3h1v1h-1zM49,3h1v1h-1zM50,3h1v1h-1zM51,3h1v1h-1zM53,3h1v1h-1zM1,4h1v1h-1zM3,4h1v1h-1zM4,4h1v1h-1zM5,4h1v1h-1zM7,4h1v1h-1zM9,4h1v1h-1zM17,4h1v1h-1zM19,4h1v1h-1zM21,4h1v1h-1zM22,4h1v1h-1zM26,4h1v1h-1zM30,4h1v1h-1zM32,4h1v1h-1zM34,4h1v1h-1zM37,4h1v1h-1zM39,4h1v1h-1zM43,4h1v1h-1zM45,4h1v1h-1zM47,4h1v1h-1zM49,4h1v1h-1zM50,4h1v1h-1zM51,4h1v1h-1zM53,4h1v1h-1zM1,5h1v1h-1zM3,5h1v1h-1zM4,5h1v1h-1zM5,5h1v1h-1zM7,5h1v1h-1zM9,5h1v1h-1zM11,5h1v1h-1zM13,5h1v1h-1zM15,5h1v1h-1zM17,5h1v1h-1zM20,5h1v1h-1zM21,5h1v1h-1zM22,5h1v1h-1zM23,5h1v1h-1zM24,5h1v1h-1zM25,5h1v1h-1zM26,5h1v1h-1zM27,5h1v1h-1zM28,5h1v1h-1zM29,5h1v1h-1zM30,5h1v1h-1zM31,5h1v1h-1zM32,5h1v1h-1zM36,5h1v1h-1zM37,5h1v1h-1zM40,5h1v1h-1zM41,5h1v1h-1zM43,5h1v1h-1zM47,5h1v1h-1zM49,5h1v1h-1zM50,5h1v1h-1zM51,5h1v1h-1zM53,5h1v1h-1zM1,6h1v1h-1zM7,6h1v1h-1zM9,6h1v1h-1zM10,6h1v1h-1zM11,6h1v1h-1zM13,6h1v1h-1zM18,6h1v1h-1zM20,6h1v1h-1zM21,6h1v1h-1zM23,6h1v1h-1zM25,6h1v1h-1zM29,6h1v1h-1zM30,6h1v1h-1zM31,6h1v1h-1zM32,6h1v1h-1zM33,6h1v1h-1zM34,6h1v1h-1zM35,6h1v1h-1zM37,6h1v1h-1zM39,6h1v1h-1zM40,6h1v1h-1zM41,6h1v1h-1zM43,6h1v1h-1zM47,6h1v1h-1zM53,6h1v1h-1zM1,7h1v1h-1zM2,7h1v1h-1zM3,7h1v1h-1zM4,7h1v1h-1zM5,7h1v1h-1zM6,7h1v1h-1zM7,7h1v1h-1zM9,7h1v1h-1zM11,7h1v1h-1zM13,7h1v1h-1zM15,7h1v1h-1zM17,7h1v1h-1zM19,7h1v1h-1zM21,7h1v1h-1zM23,7h1v1h-1zM25,7h1v1h-1zM27,7h1v1h-1zM29,7h1v1h-1zM31,7h1v1h-1zM33,7h1v1h-1zM35,7h1v1h-1zM37,7h1v1h-1zM39,7h1v1h-1zM41,7h1v1h-1zM43,7h1v1h-1zM45,7h1v1h-1zM47,7h1v1h-1zM48,7h1v1h-1zM49,7h1v1h-1zM50,7h1v1h-1zM51,7h1v1h-1zM52,7h1v1h-1zM53,7h1v1h-1zM9,8h1v1h-1zM12,8h1v1h-1zM13,8h1v1h-1zM16,8h1v1h-1zM17,8h1v1h-1zM19,8h1v1h-1zM22,8h1v1h-1zM23,8h1v1h-1zM24,8h1v1h-1zM25,8h1v1h-1zM29,8h1v1h-1zM30,8h1v1h-1zM35,8h1v1h-1zM38,8h1v1h-1zM43,8h1v1h-1zM1,9h1v1h-1zM3,9h1v1h-1zM4,9h1v1h-1zM5,9h1v1h-1zM6,9h1v1h-1zM7,9h1v1h-1zM10,9h1v1h-1zM14,9h1v1h-1zM15,9h1v1h-1zM17,9h1v1h-1zM18,9h1v1h-1zM19,9h1v1h-1zM21,9h1v1h-1zM25,9h1v1h-1zM26,9h1v1h-1zM27,9h1v1h-1zM28,9h1v1h-1zM29,9h1v1h-1zM32,9h1v1h-1zM33,9h1v1h-1zM36,9h1v1h-1zM37,9h1v1h-1zM38,9h1v1h-1zM43,9h1v1h-1zM47,9h1v1h-1zM48,9h1v1h-1zM49,9h1v1h-1zM50,9h1v1h-1zM51,9h1v1h-1zM1,10h1v1h-1zM4,10h1v1h-1zM5,10h1v1h-1zM8,10h1v1h-1zM9,10h1v1h-1zM11,10h1v1h-1zM12,10h1v1h-1zM13,10h1v1h-1zM16,10h1v1h-1zM17,10h1v1h-1zM18,10h1v1h-1zM20,10h1v1h-1zM21,10h1v1h-1zM22,10h1v1h-1zM23,10h1v1h-1zM24,10h1v1h-1zM25,10h1v1h-1zM29,10h1v1h-1zM31,10h1v1h-1zM33,10h1v1h-1zM36,10h1v1h-1zM38,10h1v1h-1zM42,10h1v1h-1zM43,10h1v1h-1zM44,10h1v1h-1zM50,10h1v1h-1zM52,10h1v1h-1zM1,11h1v1h-1zM2,11h1v1h-1zM5,11h1v1h-1zM7,11h1v1h-1zM9,11h1v1h-1zM10,11h1v1h-1zM11,11h1v1h-1zM12,11h1v1h-1zM14,11h1v1h-1zM15,11h1v1h-1zM16,11h1v1h-1zM17,11h1v1h-1zM18,11h1v1h-1zM19,11h1v1h-1zM25,11h1v1h-1zM27,11h1v1h-1zM28,11h1v1h-1zM30,11h1v1h-1zM32,11h1v1h-1zM33,11h1v1h-1zM34,11h1v1h-1zM35,11h1v1h-1zM37,11h1v1h-1zM39,11h1v1h-1zM42,11h1v1h-1zM43,11h1v1h-1zM49,11h1v1h-1zM1,12h1v1h-1zM2,12h1v1h-1zM3,12h1v1h-1zM4,12h1v1h-1zM5,12h1v1h-1zM10,12h1v1h-1zM14,12h1v1h-1zM15,12h1v1h-1zM17,12h1v1h-1zM19,12h1v1h-1zM20,12h1v1h-1zM21,12h1v1h-1zM22,12h1v1h-1zM24,12h1v1h-1zM25,12h1v1h-1zM26,12h1v1h-1zM31,12h1v1h-1zM33,12h1v1h-1zM34,12h1v1h-1zM35,12h1v1h-1zM37,12h1v1h-1zM41,12h1v1h-1zM42,12h1v1h-1zM50,12h1v1h-1zM52,12h1v1h-1zM53,12h1v1h-1zM1,13h1v1h-1zM3,13h1v1h-1zM4,13h1v1h-1zM5,13h1v1h-1zM7,13h1v1h-1zM9,13h1v1h-1zM12,13h1v1h-1zM13,13h1v1h-1zM14,13h1v1h-1zM17,13h1v1h-1zM18,13h1v1h-1zM19,13h1v1h-1zM20,13h1v1h-1zM24,13h1v1h-1zM25,13h1v1h-1zM27,13h1v1h-1zM30,13h1v1h-1zM31,13h1v1h-1zM36,13h1v1h-1zM37,13h1v1h-1zM42,13h1v1h-1zM44,13h1v1h-1zM45,13h1v1h-1zM46,13h1v1h-1zM47,13h1v1h-1zM48,13h1v1h-1zM49,13h1v1h-1zM51,13h1v1h-1zM52,13h1v1h-1zM4,14h1v1h-1zM5,14h1v1h-1zM9,14h1v1h-1zM10,14h1v1h-1zM13,14h1v1h-1zM20,14h1v1h-1zM22,14h1v1h-1zM28,14h1v1h-1zM31,14h1v1h-1zM33,14h1v1h-1zM34,14h1v1h-1zM43,14h1v1h-1zM52,14h1v1h-1zM53,14h1v1h-1zM1,15h1v1h-1zM3,15h1v1h-1zM4,15h1v1h-1zM6,15h1v1h-1zM7,15h1v1h-1zM9,15h1v1h-1zM10,15h1v1h-1zM11,15h1v1h-1zM13,15h1v1h-1zM17,15h1v1h-1zM18,15h1v1h-1zM19,15h1v1h-1zM20,15h1v1h-1zM23,15h1v1h-1zM27,15h1v1h-1zM30,15h1v1h-1zM31,15h1v1h-1zM35,15h1v1h-1zM38,15h1v1h-1zM39,15h1v1h-1zM41,15h1v1h-1zM46,15h1v1h-1zM47,15h1v1h-1zM49,15h1v1h-1zM50,15h1v1h-1zM51,15h1v1h-1zM52,15h1v1h-1zM1,16h1v1h-1zM2,16h1v1h-1zM3,16h1v1h-1zM4,16h1v1h-1zM8,16h1v1h-1zM9,16h1v1h-1zM10,16h1v1h-1zM11,16h1v1h-1zM14,16h1v1h-1zM16,16h1v1h-1zM17,16h1v1h-1zM18,16h1v1h-1zM20,16h1v1h-1zM21,16h1v1h-1zM22,16h1v1h-1zM24,16h1v1h-1zM25,16h1v1h-1zM26,16h1v1h-1zM28,16h1v1h-1zM31,16h1v1h-1zM33,16h1v1h-1zM35,16h1v1h-1zM36,16h1v1h-1zM38,16h1v1h-1zM39,16h1v1h-1zM40,16h1v1h-1zM41,16h1v1h-1zM43,16h1v1h-1zM46,16h1v1h-1zM52,16h1v1h-1zM53,16h1v1h-1zM1,17h1v1h-1zM6,17h1v1h-1zM7,17h1v1h-1zM9,17h1v1h-1zM10,17h1v1h-1zM11,17h1v1h-1zM13,17h1v1h-1zM14,17h1v1h-1zM19,17h1v1h-1zM20,17h1v1h-1zM21,17h1v1h-1zM24,17h1v1h-1zM25,17h1v1h-1zM27,17h1v1h-1zM28,17h1v1h-1zM30,17h1v1h-1zM31,17h1v1h-1zM34,17h1v1h-1zM35,17h1v1h-1zM36,17h1v1h-1zM37,17h1v1h-1zM40,17h1v1h-1zM43,17h1v1h-1zM45,17h1v1h-1zM46,17h1v1h-1zM47,17h1v1h-1zM49,17h1v1h-1zM50,17h1v1h-1zM51,17h1v1h-1zM52,17h1v1h-1zM2,18h1v1h-1zM5,18h1v1h-1zM6,18h1v1h-1zM9,18h1v1h-1zM11,18h1v1h-1zM13,18h1v1h-1zM15,18h1v1h-1zM16,18h1v1h-1zM21,18h1v1h-1zM22,18h1v1h-1zM23,18h1v1h-1zM25,18h1v1h-1zM27,18h1v1h-1zM29,18h1v1h-1zM31,18h1v1h-1zM32,18h1v1h-1zM33,18h1v1h-1zM35,18h1v1h-1zM36,18h1v1h-1zM37,18h1v1h-1zM38,18h1v1h-1zM40,18h1v1h-1zM41,18h1v1h-1zM43,18h1v1h-1zM44,18h1v1h-1zM46,18h1v1h-1zM49,18h1v1h-1zM50,18h1v1h-1zM1,19h1v1h-1zM2,19h1v1h-1zM3,19h1v1h-1zM4,19h1v1h-1zM5,19h1v1h-1zM7,19h1v1h-1zM8,19h1v1h-1zM10,19h1v1h-1zM12,19h1v1h-1zM16,19h1v1h-1zM18,19h1v1h-1zM19,19h1v1h-1zM23,19h1v1h-1zM24,19h1v1h-1zM27,19h1v1h-1zM33,19h1v1h-1zM34,19h1v1h-1zM37,19h1v1h-1zM39,19h1v1h-1zM42,19h1v1h-1zM44,19h1v1h-1zM47,19h1v1h-1zM48,19h1v1h-1zM50,19h1v1h-1zM51,19h1v1h-1zM1,20h1v1h-1zM2,20h1v1h-1zM4,20h1v1h-1zM6,20h1v1h-1zM8,20h1v1h-1zM9,20h1v1h-1zM11,20h1v1h-1zM13,20h1v1h-1zM15,20h1v1h-1zM16,20h1v1h-1zM22,20h1v1h-1zM23,20h1v1h-1zM25,20h1v1h-1zM30,20h1v1h-1zM34,20h1v1h-1zM35,20h1v1h-1zM37,20h1v1h-1zM45,20h1v1h-1zM46,20h1v1h-1zM48,20h1v1h-1zM50,20h1v1h-1zM52,20h1v1h-1zM3,21h1v1h-1zM4,21h1v1h-1zM6,21h1v1h-1zM7,21h1v1h-1zM9,21h1v1h-1zM11,21h1v1h-1zM12,21h1v1h-1zM14,21h1v1h-1zM17,21h1v1h-1zM18,21h1v1h-1zM19,21h1v1h-1zM20,21h1v1h-1zM21,21h1v1h-1zM23,21h1v1h-1zM24,21h1v1h-1zM27,21h1v1h-1zM28,21h1v1h-1zM30,21h1v1h-1zM32,21h1v1h-1zM36,21h1v1h-1zM37,21h1v1h-1zM38,21h1v1h-1zM40,21h1v1h-1zM42,21h1v1h-1zM43,21h1v1h-1zM45,21h1v1h-1zM46,21h1v1h-1zM49,21h1v1h-1zM52,21h1v1h-1zM1,22h1v1h-1zM3,22h1v1h-1zM4,22h1v1h-1zM6,22h1v1h-1zM8,22h1v1h-1zM9,22h1v1h-1zM11,22h1v1h-1zM12,22h1v1h-1zM16,22h1v1h-1zM18,22h1v1h-1zM21,22h1v1h-1zM22,22h1v1h-1zM24,22h1v1h-1zM25,22h1v1h-1zM26,22h1v1h-1zM27,22h1v1h-1zM28,22h1v1h-1zM30,22h1v1h-1zM31,22h1v1h-1zM33,22h1v1h-1zM34,22h1v1h-1zM36,22h1v1h-1zM37,22h1v1h-1zM42,22h1v1h-1zM43,22h1v1h-1zM46,22h1v1h-1zM49,22h1v1h-1zM50,22h1v1h-1zM51,22h1v1h-1zM53,22h1v1h-1zM1,23h1v1h-1zM2,23h1v1h-1zM7,23h1v1h-1zM8,23h1v1h-1zM9,23h1v1h-1zM10,23h1v1h-1zM12,23h1v1h-1zM17,23h1v1h-1zM18,23h1v1h-1zM20,23h1v1h-1zM22,23h1v1h-1zM25,23h1v1h-1zM26,23h1v1h-1zM29,23h1v1h-1zM33,23h1v1h-1zM34,23h1v1h-1zM36,23h1v1h-1zM38,23h1v1h-1zM40,23h1v1h-1zM43,23h1v1h-1zM47,23h1v1h-1zM49,23h1v1h-1zM50,23h1v1h-1zM51,23h1v1h-1zM52,23h1v1h-1zM2,24h1v1h-1zM4,24h1v1h-1zM6,24h1v1h-1zM8,24h1v1h-1zM9,24h1v1h-1zM12,24h1v1h-1zM13,24h1v1h-1zM14,24h1v1h-1zM17,24h1v1h-1zM18,24h1v1h-1zM21,24h1v1h-1zM22,24h1v1h-1zM24,24h1v1h-1zM28,24h1v1h-1zM29,24h1v1h-1zM30,24h1v1h-1zM31,24h1v1h-1zM33,24h1v1h-1zM34,24h1v1h-1zM35,24h1v1h-1zM37,24h1v1h-1zM40,24h1v1h-1zM42,24h1v1h-1zM46,24h1v1h-1zM47,24h1v1h-1zM48,24h1v1h-1zM49,24h1v1h-1zM50,24h1v1h-1zM52,24h1v1h-1zM1,25h1v1h-1zM2,25h1v1h-1zM3,25h1v1h-1zM4,25h1v1h-1zM5,25h1v1h-1zM6,25h1v1h-1zM7,25h1v1h-1zM8,25h1v1h-1zM9,25h1v1h-1zM17,25h1v1h-1zM18,25h1v1h-1zM21,25h1v1h-1zM25,25h1v1h-1zM26,25h1v1h-1zM27,25h1v1h-1zM28,25h1v1h-1zM29,25h1v1h-1zM31,25h1v1h-1zM32,25h1v1h-1zM36,25h1v1h-1zM40,25h1v1h-1zM44,25h1v1h-1zM45,25h1v1h-1zM46,25h1v1h-1zM47,25h1v1h-1zM48,25h1v1h-1zM49,25h1v1h-1zM52,25h1v1h-1zM2,26h1v1h-1zM3,26h1v1h-1zM4,26h1v1h-1zM5,26h1v1h-1zM9,26h1v1h-1zM10,26h1v1h-1zM11,26h1v1h-1zM14,26h1v1h-1zM16,26h1v1h-1zM17,26h1v1h-1zM19,26h1v1h-1zM20,26h1v1h-1zM22,26h1v1h-1zM24,26h1v1h-1zM25,26h1v1h-1zM29,26h1v1h-1zM30,26h1v1h-1zM31,26h1v1h-1zM32,26h1v1h-1zM38,26h1v1h-1zM40,26h1v1h-1zM42,26h1v1h-1zM44,26h1v1h-1zM45,26h1v1h-1zM49,26h1v1h-1zM50,26h1v1h-1zM51,26h1v1h-1zM52,26h1v1h-1zM53,26h1v1h-1zM1,27h1v1h-1zM5,27h1v1h-1zM7,27h1v1h-1zM9,27h1v1h-1zM10,27h1v1h-1zM12,27h1v1h-1zM13,27h1v1h-1zM14,27h1v1h-1zM16,27h1v1h-1zM20,27h1v1h-1zM21,27h1v1h-1zM24,27h1v1h-1zM25,27h1v1h-1zM27,27h1v1h-1zM29,27h1v1h-1zM34,27h1v1h-1zM35,27h1v1h-1zM36,27h1v1h-1zM40,27h1v1h-1zM41,27h1v1h-1zM43,27h1v1h-1zM44,27h1v1h-1zM45,27h1v1h-1zM47,27h1v1h-1zM49,27h1v1h-1zM50,27h1v1h-1zM1,28h1v1h-1zM4,28h1v1h-1zM5,28h1v1h-1zM9,28h1v1h-1zM12,28h1v1h-1zM14,28h1v1h-1zM15,28h1v1h-1zM17,28h1v1h-1zM19,28h1v1h-1zM23,28h1v1h-1zM24,28h1v1h-1zM25,28h1v1h-1zM29,28h1v1h-1zM31,28h1v1h-1zM32,28h1v1h-1zM36,28h1v1h-1zM38,28h1v1h-1zM39,28h1v1h-1zM43,28h1v1h-1zM45,28h1v1h-1zM49,28h1v1h-1zM50,28h1v1h-1zM1,29h1v1h-1zM4,29h1v1h-1zM5,29h1v1h-1zM6,29h1v1h-1zM7,29h1v1h-1zM8,29h1v1h-1zM9,29h1v1h-1zM10,29h1v1h-1zM12,29h1v1h-1zM17,29h1v1h-1zM20,29h1v1h-1zM22,29h1v1h-1zM25,29h1v1h-1zM26,29h1v1h-1zM27,29h1v1h-1zM28,29h1v1h-1zM29,29h1v1h-1zM30,29h1v1h-1zM31,29h1v1h-1zM36,29h1v1h-1zM37,29h1v1h-1zM39,29h1v1h-1zM43,29h1v1h-1zM44,29h1v1h-1zM45,29h1v1h-1zM46,29h1v1h-1zM47,29h1v1h-1zM48,29h1v1h-1zM49,29h1v1h-1zM2,30h1v1h-1zM3,30h1v1h-1zM4,30h1v1h-1zM6,30h1v1h-1zM8,30h1v1h-1zM12,30h1v1h-1zM15,30h1v1h-1zM16,30h1v1h-1zM19,30h1v1h-1zM20,30h1v1h-1zM21,30h1v1h-1zM23,30h1v1h-1zM24,30h1v1h-1zM27,30h1v1h-1zM29,30h1v1h-1zM31,30h1v1h-1zM32,30h1v1h-1zM36,30h1v1h-1zM37,30h1v1h-1zM38,30h1v1h-1zM40,30h1v1h-1zM41,30h1v1h-1zM42,30h1v1h-1zM43,30h1v1h-1zM44,30h1v1h-1zM45,30h1v1h-1zM48,30h1v1h-1zM49,30h1v1h-1zM51,30h1v1h-1zM52,30h1v1h-1zM1,31h1v1h-1zM2,31h1v1h-1zM3,31h1v1h-1zM6,31h1v1h-1zM7,31h1v1h-1zM8,31h1v1h-1zM16,31h1v1h-1zM19,31h1v1h-1zM20,31h1v1h-1zM21,31h1v1h-1zM22,31h1v1h-1zM23,31h1v1h-1zM26,31h1v1h-1zM27,31h1v1h-1zM29,31h1v1h-1zM35,31h1v1h-1zM37,31h1v1h-1zM39,31h1v1h-1zM41,31h1v1h-1zM42,31h1v1h-1zM43,31h1v1h-1zM44,31h1v1h-1zM48,31h1v1h-1zM50,31h1v1h-1zM3,32h1v1h-1zM4,32h1v1h-1zM5,32h1v1h-1zM6,32h1v1h-1zM8,32h1v1h-1zM13,32h1v1h-1zM17,32h1v1h-1zM18,32h1v1h-1zM19,32h1v1h-1zM20,32h1v1h-1zM21,32h1v1h-1zM24,32h1v1h-1zM25,32h1v1h-1zM27,32h1v1h-1zM28,32h1v1h-1zM30,32h1v1h-1zM34,32h1v1h-1zM35,32h1v1h-1zM37,32h1v1h-1zM39,32h1v1h-1zM40,32h1v1h-1zM41,32h1v1h-1zM43,32h1v1h-1zM44,32h1v1h-1zM46,32h1v1h-1zM47,32h1v1h-1zM48,32h1v1h-1zM50,32h1v1h-1zM1,33h1v1h-1zM2,33h1v1h-1zM3,33h1v1h-1zM4,33h1v1h-1zM5,33h1v1h-1zM7,33h1v1h-1zM8,33h1v1h-1zM14,33h1v1h-1zM17,33h1v1h-1zM18,33h1v1h-1zM20,33h1v1h-1zM25,33h1v1h-1zM26,33h1v1h-1zM27,33h1v1h-1zM28,33h1v1h-1zM32,33h1v1h-1zM34,33h1v1h-1zM35,33h1v1h-1zM37,33h1v1h-1zM39,33h1v1h-1zM43,33h1v1h-1zM46,33h1v1h-1zM49,33h1v1h-1zM51,33h1v1h-1zM52,33h1v1h-1zM53,33h1v1h-1zM2,34h1v1h-1zM3,34h1v1h-1zM4,34h1v1h-1zM5,34h1v1h-1zM6,34h1v1h-1zM8,34h1v1h-1zM9,34h1v1h-1zM10,34h1v1h-1zM12,34h1v1h-1zM15,34h1v1h-1zM16,34h1v1h-1zM18,34h1v1h-1zM20,34h1v1h-1zM21,34h1v1h-1zM22,34h1v1h-1zM28,34h1v1h-1zM30,34h1v1h-1zM32,34h1v1h-1zM33,34h1v1h-1zM34,34h1v1h-1zM36,34h1v1h-1zM37,34h1v1h-1zM41,34h1v1h-1zM42,34h1v1h-1zM43,34h1v1h-1zM44,34h1v1h-1zM45,34h1v1h-1zM46,34h1v1h-1zM48,34h1v1h-1zM49,34h1v1h-1zM53,34h1v1h-1zM1,35h1v1h-1zM2,35h1v1h-1zM4,35h1v1h-1zM5,35h1v1h-1zM7,35h1v1h-1zM8,35h1v1h-1zM10,35h1v1h-1zM12,35h1v1h-1zM13,35h1v1h-1zM16,35h1v1h-1zM17,35h1v1h-1zM22,35h1v1h-1zM25,35h1v1h-1zM28,35h1v1h-1zM29,35h1v1h-1zM31,35h1v1h-1zM33,35h1v1h-1zM34,35h1v1h-1zM35,35h1v1h-1zM37,35h1v1h-1zM39,35h1v1h-1zM41,35h1v1h-1zM43,35h1v1h-1zM45,35h1v1h-1zM49,35h1v1h-1zM1,36h1v1h-1zM2,36h1v1h-1zM4,36h1v1h-1zM11,36h1v1h-1zM12,36h1v1h-1zM14,36h1v1h-1zM20,36h1v1h-1zM24,36h1v1h-1zM26,36h1v1h-1zM31,36h1v1h-1zM33,36h1v1h-1zM34,36h1v1h-1zM38,36h1v1h-1zM39,36h1v1h-1zM43,36h1v1h-1zM44,36h1v1h-1zM46,36h1v1h-1zM49,36h1v1h-1zM3,37h1v1h-1zM4,37h1v1h-1zM7,37h1v1h-1zM10,37h1v1h-1zM14,37h1v1h-1zM16,37h1v1h-1zM17,37h1v1h-1zM19,37h1v1h-1zM20,37h1v1h-1zM21,37h1v1h-1zM25,37h1v1h-1zM26,37h1v1h-1zM28,37h1v1h-1zM31,37h1v1h-1zM32,37h1v1h-1zM36,37h1v1h-1zM37,37h1v1h-1zM38,37h1v1h-1zM39,37h1v1h-1zM42,37h1v1h-1zM45,37h1v1h-1zM46,37h1v1h-1zM47,37h1v1h-1zM48,37h1v1h-1zM50,37h1v1h-1zM51,37h1v1h-1zM52,37h1v1h-1zM1,38h1v1h-1zM2,38h1v1h-1zM5,38h1v1h-1zM6,38h1v1h-1zM9,38h1v1h-1zM10,38h1v1h-1zM11,38h1v1h-1zM12,38h1v1h-1zM14,38h1v1h-1zM16,38h1v1h-1zM18,38h1v1h-1zM23,38h1v1h-1zM24,38h1v1h-1zM27,38h1v1h-1zM28,38h1v1h-1zM30,38h1v1h-1zM31,38h1v1h-1zM32,38h1v1h-1zM34,38h1v1h-1zM36,38h1v1h-1zM38,38h1v1h-1zM41,38h1v1h-1zM43,38h1v1h-1zM48,38h1v1h-1zM49,38h1v1h-1zM52,38h1v1h-1zM53,38h1v1h-1zM1,39h1v1h-1zM2,39h1v1h-1zM3,39h1v1h-1zM7,39h1v1h-1zM8,39h1v1h-1zM9,39h1v1h-1zM10,39h1v1h-1zM11,39h1v1h-1zM14,39h1v1h-1zM17,39h1v1h-1zM18,39h1v1h-1zM20,39h1v1h-1zM22,39h1v1h-1zM25,39h1v1h-1zM28,39h1v1h-1zM29,39h1v1h-1zM31,39h1v1h-1zM32,39h1v1h-1zM37,39h1v1h-1zM39,39h1v1h-1zM41,39h1v1h-1zM43,39h1v1h-1zM48,39h1v1h-1zM50,39h1v1h-1zM52,39h1v1h-1zM1,40h1v1h-1zM4,40h1v1h-1zM6,40h1v1h-1zM10,40h1v1h-1zM11,40h1v1h-1zM13,40h1v1h-1zM14,40h1v1h-1zM21,40h1v1h-1zM24,40h1v1h-1zM25,40h1v1h-1zM26,40h1v1h-1zM28,40h1v1h-1zM30,40h1v1h-1zM31,40h1v1h-1zM34,40h1v1h-1zM35,40h1v1h-1zM37,40h1v1h-1zM38,40h1v1h-1zM39,40h1v1h-1zM40,40h1v1h-1zM42,40h1v1h-1zM44,40h1v1h-1zM45,40h1v1h-1zM46,40h1v1h-1zM47,40h1v1h-1zM48,40h1v1h-1zM50,40h1v1h-1zM53,40h1v1h-1zM1,41h1v1h-1zM2,41h1v1h-1zM4,41h1v1h-1zM6,41h1v1h-1zM7,41h1v1h-1zM9,41h1v1h-1zM10,41h1v1h-1zM11,41h1v1h-1zM12,41h1v1h-1zM14,41h1v1h-1zM18,41h1v1h-1zM19,41h1v1h-1zM20,41h1v1h-1zM22,41h1v1h-1zM25,41h1v1h-1zM26,41h1v1h-1zM31,41h1v1h-1zM34,41h1v1h-1zM35,41h1v1h-1zM36,41h1v1h-1zM37,41h1v1h-1zM39,41h1v1h-1zM41,41h1v1h-1zM46,41h1v1h-1zM49,41h1v1h-1zM53,41h1v1h-1zM1,42h1v1h-1zM6,42h1v1h-1zM8,42h1v1h-1zM9,42h1v1h-1zM10,42h1v1h-1zM11,42h1v1h-1zM12,42h1v1h-1zM14,42h1v1h-1zM15,42h1v1h-1zM16,42h1v1h-1zM17,42h1v1h-1zM20,42h1v1h-1zM24,42h1v1h-1zM26,42h1v1h-1zM27,42h1v1h-1zM30,42h1v1h-1zM31,42h1v1h-1zM33,42h1v1h-1zM36,42h1v1h-1zM37,42h1v1h-1zM38,42h1v1h-1zM39,42h1v1h-1zM40,42h1v1h-1zM41,42h1v1h-1zM42,42h1v1h-1zM43,42h1v1h-1zM45,42h1v1h-1zM46,42h1v1h-1zM48,42h1v1h-1zM49,42h1v1h-1zM51,42h1v1h-1zM52,42h1v1h-1zM53,42h1v1h-1zM1,43h1v1h-1zM2,43h1v1h-1zM4,43h1v1h-1zM5,43h1v1h-1zM6,43h1v1h-1zM7,43h1v1h-1zM9,43h1v1h-1zM12,43h1v1h-1zM13,43h1v1h-1zM14,43h1v1h-1zM18,43h1v1h-1zM19,43h1v1h-1zM20,43h1v1h-1zM21,43h1v1h-1zM22,43h1v1h-1zM25,43h1v1h-1zM28,43h1v1h-1zM29,43h1v1h-1zM32,43h1v1h-1zM33,43h1v1h-1zM34,43h1v1h-1zM37,43h1v1h-1zM41,43h1v1h-1zM43,43h1v1h-1zM45,43h1v1h-1zM46,43h1v1h-1zM49,43h1v1h-1zM50,43h1v1h-1zM51,43h1v1h-1zM52,43h1v1h-1zM2,44h1v1h-1zM3,44h1v1h-1zM9,44h1v1h-1zM10,44h1v1h-1zM11,44h1v1h-1zM12,44h1v1h-1zM15,44h1v1h-1zM16,44h1v1h-1zM20,44h1v1h-1zM23,44h1v1h-1zM24,44h1v1h-1zM33,44h1v1h-1zM35,44h1v1h-1zM36,44h1v1h-1zM37,44h1v1h-1zM39,44h1v1h-1zM40,44h1v1h-1zM43,44h1v1h-1zM45,44h1v1h-1zM47,44h1v1h-1zM48,44h1v1h-1zM50,44h1v1h-1zM52,44h1v1h-1zM53,44h1v1h-1zM4,45h1v1h-1zM7,45h1v1h-1zM8,45h1v1h-1zM10,45h1v1h-1zM11,45h1v1h-1zM12,45h1v1h-1zM13,45h1v1h-1zM15,45h1v1h-1zM17,45h1v1h-1zM18,45h1v1h-1zM19,45h1v1h-1zM24,45h1v1h-1zM25,45h1v1h-1zM26,45h1v1h-1zM27,45h1v1h-1zM28,45h1v1h-1zM29,45h1v1h-1zM30,45h1v1h-1zM31,45h1v1h-1zM32,45h1v1h-1zM35,45h1v1h-1zM37,45h1v1h-1zM39,45h1v1h-1zM42,45h1v1h-1zM43,45h1v1h-1zM45,45h1v1h-1zM46,45h1v1h-1zM47,45h1v1h-1zM48,45h1v1h-1zM49,45h1v1h-1zM51,45h1v1h-1zM52,45h1v1h-1zM53,45h1v1h-1zM9,46h1v1h-1zM10,46h1v1h-1zM12,46h1v1h-1zM13,46h1v1h-1zM16,46h1v1h-1zM18,46h1v1h-1zM22,46h1v1h-1zM23,46h1v1h-1zM24,46h1v1h-1zM25,46h1v1h-1zM29,46h1v1h-1zM30,46h1v1h-1zM31,46h1v1h-1zM33,46h1v1h-1zM36,46h1v1h-1zM37,46h1v1h-1zM38,46h1v1h-1zM41,46h1v1h-1zM43,46h1v1h-1zM44,46h1v1h-1zM45,46h1v1h-1zM49,46h1v1h-1zM50,46h1v1h-1zM51,46h1v1h-1zM53,46h1v1h-1zM1,47h1v1h-1zM2,47h1v1h-1zM3,47h1v1h-1zM4,47h1v1h-1zM5,47h1v1h-1zM6,47h1v1h-1zM7,47h1v1h-1zM13,47h1v1h-1zM16,47h1v1h-1zM18,47h1v1h-1zM20,47h1v1h-1zM23,47h1v1h-1zM25,47h1v1h-1zM27,47h1v1h-1zM29,47h1v1h-1zM30,47h1v1h-1zM32,47h1v1h-1zM33,47h1v1h-1zM34,47h1v1h-1zM35,47h1v1h-1zM37,47h1v1h-1zM40,47h1v1h-1zM42,47h1v1h-1zM43,47h1v1h-1zM45,47h1v1h-1zM47,47h1v1h-1zM49,47h1v1h-1zM51,47h1v1h-1zM1,48h1v1h-1zM7,48h1v1h-1zM9,48h1v1h-1zM11,48h1v1h-1zM12,48h1v1h-1zM14,48h1v1h-1zM15,48h1v1h-1zM17,48h1v1h-1zM19,48h1v1h-1zM21,48h1v1h-1zM22,48h1v1h-1zM23,48h1v1h-1zM25,48h1v1h-1zM29,48h1v1h-1zM30,48h1v1h-1zM34,48h1v1h-1zM39,48h1v1h-1zM40,48h1v1h-1zM43,48h1v1h-1zM44,48h1v1h-1zM45,48h1v1h-1zM49,48h1v1h-1zM1,49h1v1h-1zM3,49h1v1h-1zM4,49h1v1h-1zM5,49h1v1h-1zM7,49h1v1h-1zM9,49h1v1h-1zM10,49h1v1h-1zM11,49h1v1h-1zM13,49h1v1h-1zM15,49h1v1h-1zM16,49h1v1h-1zM19,49h1v1h-1zM20,49h1v1h-1zM23,49h1v1h-1zM25,49h1v1h-1zM26,49h1v1h-1zM27,49h1v1h-1zM28,49h1v1h-1zM29,49h1v1h-1zM32,49h1v1h-1zM33,49h1v1h-1zM34,49h1v1h-1zM35,49h1v1h-1zM36,49h1v1h-1zM37,49h1v1h-1zM38,49h1v1h-1zM44,49h1v1h-1zM45,49h1v1h-1zM46,49h1v1h-1zM47,49h1v1h-1zM48,49h1v1h-1zM49,49h1v1h-1zM51,49h1v1h-1zM52,49h1v1h-1zM1,50h1v1h-1zM3,50h1v1h-1zM4,50h1v1h-1zM5,50h1v1h-1zM7,50h1v1h-1zM9,50h1v1h-1zM12,50h1v1h-1zM17,50h1v1h-1zM18,50h1v1h-1zM19,50h1v1h-1zM20,50h1v1h-1zM22,50h1v1h-1zM24,50h1v1h-1zM25,50h1v1h-1zM26,50h1v1h-1zM28,50h1v1h-1zM29,50h1v1h-1zM31,50h1v1h-1zM33,50h1v1h-1zM36,50h1v1h-1zM38,50h1v1h-1zM40,50h1v1h-1zM41,50h1v1h-1zM42,50h1v1h-1zM43,50h1v1h-1zM45,50h1v1h-1zM48,50h1v1h-1zM50,50h1v1h-1zM51,50h1v1h-1zM1,51h1v1h-1zM3,51h1v1h-1zM4,51h1v1h-1zM5,51h1v1h-1zM7,51h1v1h-1zM9,51h1v1h-1zM10,51h1v1h-1zM11,51h1v1h-1zM13,51h1v1h-1zM21,51h1v1h-1zM23,51h1v1h-1zM25,51h1v1h-1zM26,51h1v1h-1zM28,51h1v1h-1zM30,51h1v1h-1zM32,51h1v1h-1zM33,51h1v1h-1zM34,51h1v1h-1zM35,51h1v1h-1zM39,51h1v1h-1zM40,51h1v1h-1zM41,51h1v1h-1zM43,51h1v1h-1zM44,51h1v1h-1zM46,51h1v1h-1zM49,51h1v1h-1zM50,51h1v1h-1zM51,51h1v1h-1zM52,51h1v1h-1zM53,51h1v1h-1zM1,52h1v1h-1zM7,52h1v1h-1zM10,52h1v1h-1zM11,52h1v1h-1zM12,52h1v1h-1zM13,52h1v1h-1zM14,52h1v1h-1zM20,52h1v1h-1zM21,52h1v1h-1zM22,52h1v1h-1zM24,52h1v1h-1zM25,52h1v1h-1zM31,52h1v1h-1zM32,52h1v1h-1zM34,52h1v1h-1zM36,52h1v1h-1zM40,52h1v1h-1zM41,52h1v1h-1zM43,52h1v1h-1zM46,52h1v1h-1zM48,52h1v1h-1zM52,52h1v1h-1zM1,53h1v1h-1zM2,53h1v1h-1zM3,53h1v1h-1zM4,53h1v1h-1zM5,53h1v1h-1zM6,53h1v1h-1zM7,53h1v1h-1zM9,53h1v1h-1zM10,53h1v1h-1zM11,53h1v1h-1zM17,53h1v1h-1zM18,53h1v1h-1zM19,53h1v1h-1zM21,53h1v1h-1zM22,53h1v1h-1zM23,53h1v1h-1zM24,53h1v1h-1zM25,53h1v1h-1zM28,53h1v1h-1zM30,53h1v1h-1zM31,53h1v1h-1zM32,53h1v1h-1zM34,53h1v1h-1zM37,53h1v1h-1zM42,53h1v1h-1zM44,53h1v1h-1zM47,53h1v1h-1zM48,53h1v1h-1zM49,53h1v1h-1zM51,53h1v1h-1z" fill="#000000"/></svg>
+          </div>
+        </div>
+      </div>
+    </article>
+  
+
+    <article class="item-label">
+      <header class="label-header">
+        <div class="header-logo-box">
+          <img src="images.png" alt="Logo Kemendikbud">
+        </div>
+        <div class="header-text-box">
+          <div class="instansi-line1">KEMENTERIAN PENDIDIKAN DASAR DAN</div>
+          <div class="instansi-line2">MENENGAH</div>
+          <div class="satker-code-line">138041000693242000KD.2019</div>
+        </div>
+        <div class="header-logo-box" style="visibility: hidden;" aria-hidden="true"></div>
+      </header>
+
+      <div class="label-body">
+        <div class="body-info-left">
+          <div>
+            <div class="info-top-row">
+              <span class="info-kode-barang">3070201003</span>
+              <span class="info-nup">NUP: 2</span>
+            </div>
+            <div class="info-nama-barang" title="Audio/Vidio Comunication">Audio/Vidio Comunication</div>
+          </div>
+          <div class="info-merk-tipe" title="VIDIO WALL 46 INCH">VIDIO WALL 46 INCH</div>
+        </div>
+
+        <div class="body-qr-right">
+          <div class="qr-box" title="QR Barcode BMN">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 55" width="85" height="85" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="#ffffff"/><path d="M1,1h1v1h-1zM2,1h1v1h-1zM3,1h1v1h-1zM4,1h1v1h-1zM5,1h1v1h-1zM6,1h1v1h-1zM7,1h1v1h-1zM11,1h1v1h-1zM15,1h1v1h-1zM17,1h1v1h-1zM18,1h1v1h-1zM20,1h1v1h-1zM21,1h1v1h-1zM25,1h1v1h-1zM30,1h1v1h-1zM31,1h1v1h-1zM32,1h1v1h-1zM33,1h1v1h-1zM38,1h1v1h-1zM39,1h1v1h-1zM40,1h1v1h-1zM41,1h1v1h-1zM42,1h1v1h-1zM43,1h1v1h-1zM47,1h1v1h-1zM48,1h1v1h-1zM49,1h1v1h-1zM50,1h1v1h-1zM51,1h1v1h-1zM52,1h1v1h-1zM53,1h1v1h-1zM1,2h1v1h-1zM7,2h1v1h-1zM11,2h1v1h-1zM12,2h1v1h-1zM14,2h1v1h-1zM16,2h1v1h-1zM17,2h1v1h-1zM20,2h1v1h-1zM22,2h1v1h-1zM23,2h1v1h-1zM24,2h1v1h-1zM25,2h1v1h-1zM26,2h1v1h-1zM33,2h1v1h-1zM34,2h1v1h-1zM37,2h1v1h-1zM41,2h1v1h-1zM43,2h1v1h-1zM44,2h1v1h-1zM47,2h1v1h-1zM53,2h1v1h-1zM1,3h1v1h-1zM3,3h1v1h-1zM4,3h1v1h-1zM5,3h1v1h-1zM7,3h1v1h-1zM9,3h1v1h-1zM10,3h1v1h-1zM11,3h1v1h-1zM12,3h1v1h-1zM13,3h1v1h-1zM14,3h1v1h-1zM16,3h1v1h-1zM20,3h1v1h-1zM22,3h1v1h-1zM23,3h1v1h-1zM25,3h1v1h-1zM28,3h1v1h-1zM30,3h1v1h-1zM33,3h1v1h-1zM36,3h1v1h-1zM37,3h1v1h-1zM38,3h1v1h-1zM39,3h1v1h-1zM40,3h1v1h-1zM44,3h1v1h-1zM47,3h1v1h-1zM49,3h1v1h-1zM50,3h1v1h-1zM51,3h1v1h-1zM53,3h1v1h-1zM1,4h1v1h-1zM3,4h1v1h-1zM4,4h1v1h-1zM5,4h1v1h-1zM7,4h1v1h-1zM9,4h1v1h-1zM17,4h1v1h-1zM19,4h1v1h-1zM20,4h1v1h-1zM21,4h1v1h-1zM22,4h1v1h-1zM26,4h1v1h-1zM30,4h1v1h-1zM32,4h1v1h-1zM34,4h1v1h-1zM37,4h1v1h-1zM39,4h1v1h-1zM43,4h1v1h-1zM45,4h1v1h-1zM47,4h1v1h-1zM49,4h1v1h-1zM50,4h1v1h-1zM51,4h1v1h-1zM53,4h1v1h-1zM1,5h1v1h-1zM3,5h1v1h-1zM4,5h1v1h-1zM5,5h1v1h-1zM7,5h1v1h-1zM9,5h1v1h-1zM11,5h1v1h-1zM13,5h1v1h-1zM15,5h1v1h-1zM17,5h1v1h-1zM21,5h1v1h-1zM22,5h1v1h-1zM23,5h1v1h-1zM24,5h1v1h-1zM25,5h1v1h-1zM26,5h1v1h-1zM27,5h1v1h-1zM28,5h1v1h-1zM29,5h1v1h-1zM30,5h1v1h-1zM31,5h1v1h-1zM32,5h1v1h-1zM36,5h1v1h-1zM37,5h1v1h-1zM40,5h1v1h-1zM41,5h1v1h-1zM43,5h1v1h-1zM47,5h1v1h-1zM49,5h1v1h-1zM50,5h1v1h-1zM51,5h1v1h-1zM53,5h1v1h-1zM1,6h1v1h-1zM7,6h1v1h-1zM9,6h1v1h-1zM10,6h1v1h-1zM11,6h1v1h-1zM13,6h1v1h-1zM18,6h1v1h-1zM23,6h1v1h-1zM25,6h1v1h-1zM29,6h1v1h-1zM30,6h1v1h-1zM31,6h1v1h-1zM32,6h1v1h-1zM33,6h1v1h-1zM34,6h1v1h-1zM35,6h1v1h-1zM37,6h1v1h-1zM39,6h1v1h-1zM40,6h1v1h-1zM41,6h1v1h-1zM43,6h1v1h-1zM47,6h1v1h-1zM53,6h1v1h-1zM1,7h1v1h-1zM2,7h1v1h-1zM3,7h1v1h-1zM4,7h1v1h-1zM5,7h1v1h-1zM6,7h1v1h-1zM7,7h1v1h-1zM9,7h1v1h-1zM11,7h1v1h-1zM13,7h1v1h-1zM15,7h1v1h-1zM17,7h1v1h-1zM19,7h1v1h-1zM21,7h1v1h-1zM23,7h1v1h-1zM25,7h1v1h-1zM27,7h1v1h-1zM29,7h1v1h-1zM31,7h1v1h-1zM33,7h1v1h-1zM35,7h1v1h-1zM37,7h1v1h-1zM39,7h1v1h-1zM41,7h1v1h-1zM43,7h1v1h-1zM45,7h1v1h-1zM47,7h1v1h-1zM48,7h1v1h-1zM49,7h1v1h-1zM50,7h1v1h-1zM51,7h1v1h-1zM52,7h1v1h-1zM53,7h1v1h-1zM9,8h1v1h-1zM10,8h1v1h-1zM11,8h1v1h-1zM12,8h1v1h-1zM13,8h1v1h-1zM16,8h1v1h-1zM17,8h1v1h-1zM19,8h1v1h-1zM20,8h1v1h-1zM21,8h1v1h-1zM22,8h1v1h-1zM23,8h1v1h-1zM24,8h1v1h-1zM25,8h1v1h-1zM29,8h1v1h-1zM30,8h1v1h-1zM35,8h1v1h-1zM38,8h1v1h-1zM43,8h1v1h-1zM1,9h1v1h-1zM3,9h1v1h-1zM4,9h1v1h-1zM5,9h1v1h-1zM6,9h1v1h-1zM7,9h1v1h-1zM10,9h1v1h-1zM11,9h1v1h-1zM14,9h1v1h-1zM15,9h1v1h-1zM18,9h1v1h-1zM19,9h1v1h-1zM21,9h1v1h-1zM25,9h1v1h-1zM26,9h1v1h-1zM27,9h1v1h-1zM28,9h1v1h-1zM29,9h1v1h-1zM32,9h1v1h-1zM33,9h1v1h-1zM36,9h1v1h-1zM37,9h1v1h-1zM38,9h1v1h-1zM43,9h1v1h-1zM47,9h1v1h-1zM48,9h1v1h-1zM49,9h1v1h-1zM50,9h1v1h-1zM51,9h1v1h-1zM1,10h1v1h-1zM4,10h1v1h-1zM5,10h1v1h-1zM8,10h1v1h-1zM9,10h1v1h-1zM10,10h1v1h-1zM11,10h1v1h-1zM12,10h1v1h-1zM13,10h1v1h-1zM18,10h1v1h-1zM20,10h1v1h-1zM21,10h1v1h-1zM22,10h1v1h-1zM23,10h1v1h-1zM24,10h1v1h-1zM25,10h1v1h-1zM29,10h1v1h-1zM31,10h1v1h-1zM33,10h1v1h-1zM36,10h1v1h-1zM38,10h1v1h-1zM42,10h1v1h-1zM43,10h1v1h-1zM44,10h1v1h-1zM50,10h1v1h-1zM52,10h1v1h-1zM1,11h1v1h-1zM5,11h1v1h-1zM7,11h1v1h-1zM9,11h1v1h-1zM10,11h1v1h-1zM11,11h1v1h-1zM12,11h1v1h-1zM14,11h1v1h-1zM15,11h1v1h-1zM16,11h1v1h-1zM17,11h1v1h-1zM18,11h1v1h-1zM19,11h1v1h-1zM25,11h1v1h-1zM27,11h1v1h-1zM28,11h1v1h-1zM30,11h1v1h-1zM32,11h1v1h-1zM33,11h1v1h-1zM34,11h1v1h-1zM35,11h1v1h-1zM37,11h1v1h-1zM39,11h1v1h-1zM42,11h1v1h-1zM43,11h1v1h-1zM49,11h1v1h-1zM1,12h1v1h-1zM2,12h1v1h-1zM3,12h1v1h-1zM4,12h1v1h-1zM10,12h1v1h-1zM16,12h1v1h-1zM19,12h1v1h-1zM20,12h1v1h-1zM21,12h1v1h-1zM22,12h1v1h-1zM24,12h1v1h-1zM25,12h1v1h-1zM26,12h1v1h-1zM31,12h1v1h-1zM33,12h1v1h-1zM34,12h1v1h-1zM35,12h1v1h-1zM37,12h1v1h-1zM41,12h1v1h-1zM42,12h1v1h-1zM50,12h1v1h-1zM52,12h1v1h-1zM53,12h1v1h-1zM2,13h1v1h-1zM3,13h1v1h-1zM4,13h1v1h-1zM5,13h1v1h-1zM7,13h1v1h-1zM9,13h1v1h-1zM12,13h1v1h-1zM14,13h1v1h-1zM15,13h1v1h-1zM17,13h1v1h-1zM18,13h1v1h-1zM19,13h1v1h-1zM20,13h1v1h-1zM24,13h1v1h-1zM25,13h1v1h-1zM27,13h1v1h-1zM30,13h1v1h-1zM31,13h1v1h-1zM36,13h1v1h-1zM37,13h1v1h-1zM42,13h1v1h-1zM44,13h1v1h-1zM45,13h1v1h-1zM46,13h1v1h-1zM47,13h1v1h-1zM48,13h1v1h-1zM49,13h1v1h-1zM51,13h1v1h-1zM52,13h1v1h-1zM4,14h1v1h-1zM6,14h1v1h-1zM9,14h1v1h-1zM10,14h1v1h-1zM12,14h1v1h-1zM13,14h1v1h-1zM20,14h1v1h-1zM22,14h1v1h-1zM28,14h1v1h-1zM31,14h1v1h-1zM33,14h1v1h-1zM34,14h1v1h-1zM43,14h1v1h-1zM52,14h1v1h-1zM53,14h1v1h-1zM1,15h1v1h-1zM3,15h1v1h-1zM4,15h1v1h-1zM5,15h1v1h-1zM6,15h1v1h-1zM7,15h1v1h-1zM9,15h1v1h-1zM10,15h1v1h-1zM11,15h1v1h-1zM13,15h1v1h-1zM17,15h1v1h-1zM18,15h1v1h-1zM20,15h1v1h-1zM23,15h1v1h-1zM27,15h1v1h-1zM30,15h1v1h-1zM31,15h1v1h-1zM35,15h1v1h-1zM38,15h1v1h-1zM39,15h1v1h-1zM41,15h1v1h-1zM46,15h1v1h-1zM47,15h1v1h-1zM49,15h1v1h-1zM50,15h1v1h-1zM51,15h1v1h-1zM52,15h1v1h-1zM1,16h1v1h-1zM2,16h1v1h-1zM3,16h1v1h-1zM4,16h1v1h-1zM8,16h1v1h-1zM9,16h1v1h-1zM10,16h1v1h-1zM11,16h1v1h-1zM13,16h1v1h-1zM14,16h1v1h-1zM16,16h1v1h-1zM17,16h1v1h-1zM18,16h1v1h-1zM19,16h1v1h-1zM20,16h1v1h-1zM21,16h1v1h-1zM22,16h1v1h-1zM24,16h1v1h-1zM25,16h1v1h-1zM26,16h1v1h-1zM28,16h1v1h-1zM31,16h1v1h-1zM33,16h1v1h-1zM35,16h1v1h-1zM36,16h1v1h-1zM38,16h1v1h-1zM39,16h1v1h-1zM40,16h1v1h-1zM41,16h1v1h-1zM43,16h1v1h-1zM46,16h1v1h-1zM52,16h1v1h-1zM53,16h1v1h-1zM1,17h1v1h-1zM6,17h1v1h-1zM7,17h1v1h-1zM9,17h1v1h-1zM10,17h1v1h-1zM11,17h1v1h-1zM13,17h1v1h-1zM14,17h1v1h-1zM20,17h1v1h-1zM21,17h1v1h-1zM24,17h1v1h-1zM25,17h1v1h-1zM27,17h1v1h-1zM28,17h1v1h-1zM30,17h1v1h-1zM31,17h1v1h-1zM34,17h1v1h-1zM35,17h1v1h-1zM36,17h1v1h-1zM37,17h1v1h-1zM40,17h1v1h-1zM43,17h1v1h-1zM45,17h1v1h-1zM46,17h1v1h-1zM47,17h1v1h-1zM49,17h1v1h-1zM50,17h1v1h-1zM51,17h1v1h-1zM52,17h1v1h-1zM2,18h1v1h-1zM5,18h1v1h-1zM6,18h1v1h-1zM9,18h1v1h-1zM11,18h1v1h-1zM13,18h1v1h-1zM15,18h1v1h-1zM16,18h1v1h-1zM18,18h1v1h-1zM21,18h1v1h-1zM22,18h1v1h-1zM23,18h1v1h-1zM25,18h1v1h-1zM27,18h1v1h-1zM29,18h1v1h-1zM31,18h1v1h-1zM32,18h1v1h-1zM33,18h1v1h-1zM35,18h1v1h-1zM36,18h1v1h-1zM37,18h1v1h-1zM38,18h1v1h-1zM40,18h1v1h-1zM41,18h1v1h-1zM43,18h1v1h-1zM44,18h1v1h-1zM46,18h1v1h-1zM49,18h1v1h-1zM50,18h1v1h-1zM1,19h1v1h-1zM2,19h1v1h-1zM3,19h1v1h-1zM4,19h1v1h-1zM5,19h1v1h-1zM7,19h1v1h-1zM8,19h1v1h-1zM10,19h1v1h-1zM12,19h1v1h-1zM16,19h1v1h-1zM18,19h1v1h-1zM19,19h1v1h-1zM23,19h1v1h-1zM24,19h1v1h-1zM27,19h1v1h-1zM33,19h1v1h-1zM34,19h1v1h-1zM37,19h1v1h-1zM39,19h1v1h-1zM42,19h1v1h-1zM44,19h1v1h-1zM47,19h1v1h-1zM48,19h1v1h-1zM50,19h1v1h-1zM51,19h1v1h-1zM1,20h1v1h-1zM2,20h1v1h-1zM4,20h1v1h-1zM6,20h1v1h-1zM8,20h1v1h-1zM9,20h1v1h-1zM11,20h1v1h-1zM13,20h1v1h-1zM15,20h1v1h-1zM16,20h1v1h-1zM22,20h1v1h-1zM23,20h1v1h-1zM25,20h1v1h-1zM30,20h1v1h-1zM34,20h1v1h-1zM35,20h1v1h-1zM37,20h1v1h-1zM45,20h1v1h-1zM46,20h1v1h-1zM48,20h1v1h-1zM50,20h1v1h-1zM52,20h1v1h-1zM3,21h1v1h-1zM4,21h1v1h-1zM6,21h1v1h-1zM7,21h1v1h-1zM9,21h1v1h-1zM11,21h1v1h-1zM12,21h1v1h-1zM14,21h1v1h-1zM17,21h1v1h-1zM18,21h1v1h-1zM19,21h1v1h-1zM20,21h1v1h-1zM21,21h1v1h-1zM23,21h1v1h-1zM24,21h1v1h-1zM27,21h1v1h-1zM28,21h1v1h-1zM30,21h1v1h-1zM32,21h1v1h-1zM36,21h1v1h-1zM37,21h1v1h-1zM38,21h1v1h-1zM40,21h1v1h-1zM42,21h1v1h-1zM43,21h1v1h-1zM45,21h1v1h-1zM46,21h1v1h-1zM49,21h1v1h-1zM52,21h1v1h-1zM1,22h1v1h-1zM3,22h1v1h-1zM4,22h1v1h-1zM6,22h1v1h-1zM8,22h1v1h-1zM9,22h1v1h-1zM11,22h1v1h-1zM12,22h1v1h-1zM16,22h1v1h-1zM18,22h1v1h-1zM21,22h1v1h-1zM22,22h1v1h-1zM24,22h1v1h-1zM25,22h1v1h-1zM26,22h1v1h-1zM27,22h1v1h-1zM28,22h1v1h-1zM30,22h1v1h-1zM31,22h1v1h-1zM33,22h1v1h-1zM34,22h1v1h-1zM36,22h1v1h-1zM37,22h1v1h-1zM42,22h1v1h-1zM43,22h1v1h-1zM46,22h1v1h-1zM49,22h1v1h-1zM50,22h1v1h-1zM51,22h1v1h-1zM53,22h1v1h-1zM1,23h1v1h-1zM2,23h1v1h-1zM7,23h1v1h-1zM8,23h1v1h-1zM9,23h1v1h-1zM10,23h1v1h-1zM12,23h1v1h-1zM17,23h1v1h-1zM18,23h1v1h-1zM20,23h1v1h-1zM22,23h1v1h-1zM25,23h1v1h-1zM26,23h1v1h-1zM29,23h1v1h-1zM33,23h1v1h-1zM34,23h1v1h-1zM36,23h1v1h-1zM38,23h1v1h-1zM40,23h1v1h-1zM43,23h1v1h-1zM47,23h1v1h-1zM49,23h1v1h-1zM50,23h1v1h-1zM51,23h1v1h-1zM52,23h1v1h-1zM2,24h1v1h-1zM4,24h1v1h-1zM6,24h1v1h-1zM8,24h1v1h-1zM12,24h1v1h-1zM13,24h1v1h-1zM14,24h1v1h-1zM17,24h1v1h-1zM18,24h1v1h-1zM21,24h1v1h-1zM22,24h1v1h-1zM24,24h1v1h-1zM28,24h1v1h-1zM29,24h1v1h-1zM30,24h1v1h-1zM31,24h1v1h-1zM33,24h1v1h-1zM34,24h1v1h-1zM35,24h1v1h-1zM37,24h1v1h-1zM40,24h1v1h-1zM42,24h1v1h-1zM46,24h1v1h-1zM47,24h1v1h-1zM48,24h1v1h-1zM49,24h1v1h-1zM50,24h1v1h-1zM52,24h1v1h-1zM1,25h1v1h-1zM2,25h1v1h-1zM3,25h1v1h-1zM5,25h1v1h-1zM6,25h1v1h-1zM7,25h1v1h-1zM8,25h1v1h-1zM9,25h1v1h-1zM17,25h1v1h-1zM18,25h1v1h-1zM21,25h1v1h-1zM25,25h1v1h-1zM26,25h1v1h-1zM27,25h1v1h-1zM28,25h1v1h-1zM29,25h1v1h-1zM31,25h1v1h-1zM32,25h1v1h-1zM36,25h1v1h-1zM40,25h1v1h-1zM44,25h1v1h-1zM45,25h1v1h-1zM46,25h1v1h-1zM47,25h1v1h-1zM48,25h1v1h-1zM49,25h1v1h-1zM52,25h1v1h-1zM2,26h1v1h-1zM4,26h1v1h-1zM5,26h1v1h-1zM9,26h1v1h-1zM10,26h1v1h-1zM11,26h1v1h-1zM14,26h1v1h-1zM16,26h1v1h-1zM17,26h1v1h-1zM19,26h1v1h-1zM21,26h1v1h-1zM22,26h1v1h-1zM24,26h1v1h-1zM25,26h1v1h-1zM29,26h1v1h-1zM30,26h1v1h-1zM31,26h1v1h-1zM32,26h1v1h-1zM38,26h1v1h-1zM40,26h1v1h-1zM42,26h1v1h-1zM44,26h1v1h-1zM45,26h1v1h-1zM49,26h1v1h-1zM50,26h1v1h-1zM51,26h1v1h-1zM52,26h1v1h-1zM53,26h1v1h-1zM1,27h1v1h-1zM5,27h1v1h-1zM7,27h1v1h-1zM9,27h1v1h-1zM10,27h1v1h-1zM12,27h1v1h-1zM13,27h1v1h-1zM14,27h1v1h-1zM16,27h1v1h-1zM21,27h1v1h-1zM24,27h1v1h-1zM25,27h1v1h-1zM27,27h1v1h-1zM29,27h1v1h-1zM34,27h1v1h-1zM35,27h1v1h-1zM36,27h1v1h-1zM40,27h1v1h-1zM41,27h1v1h-1zM43,27h1v1h-1zM44,27h1v1h-1zM45,27h1v1h-1zM47,27h1v1h-1zM49,27h1v1h-1zM50,27h1v1h-1zM1,28h1v1h-1zM4,28h1v1h-1zM5,28h1v1h-1zM9,28h1v1h-1zM10,28h1v1h-1zM11,28h1v1h-1zM12,28h1v1h-1zM14,28h1v1h-1zM15,28h1v1h-1zM17,28h1v1h-1zM19,28h1v1h-1zM20,28h1v1h-1zM21,28h1v1h-1zM23,28h1v1h-1zM24,28h1v1h-1zM25,28h1v1h-1zM29,28h1v1h-1zM31,28h1v1h-1zM32,28h1v1h-1zM36,28h1v1h-1zM38,28h1v1h-1zM39,28h1v1h-1zM43,28h1v1h-1zM45,28h1v1h-1zM49,28h1v1h-1zM50,28h1v1h-1zM1,29h1v1h-1zM4,29h1v1h-1zM5,29h1v1h-1zM6,29h1v1h-1zM7,29h1v1h-1zM8,29h1v1h-1zM9,29h1v1h-1zM10,29h1v1h-1zM11,29h1v1h-1zM12,29h1v1h-1zM16,29h1v1h-1zM20,29h1v1h-1zM22,29h1v1h-1zM25,29h1v1h-1zM26,29h1v1h-1zM27,29h1v1h-1zM28,29h1v1h-1zM29,29h1v1h-1zM30,29h1v1h-1zM31,29h1v1h-1zM36,29h1v1h-1zM37,29h1v1h-1zM39,29h1v1h-1zM43,29h1v1h-1zM44,29h1v1h-1zM45,29h1v1h-1zM46,29h1v1h-1zM47,29h1v1h-1zM48,29h1v1h-1zM49,29h1v1h-1zM2,30h1v1h-1zM3,30h1v1h-1zM4,30h1v1h-1zM6,30h1v1h-1zM8,30h1v1h-1zM10,30h1v1h-1zM12,30h1v1h-1zM15,30h1v1h-1zM19,30h1v1h-1zM20,30h1v1h-1zM21,30h1v1h-1zM23,30h1v1h-1zM24,30h1v1h-1zM27,30h1v1h-1zM29,30h1v1h-1zM31,30h1v1h-1zM32,30h1v1h-1zM36,30h1v1h-1zM37,30h1v1h-1zM38,30h1v1h-1zM40,30h1v1h-1zM41,30h1v1h-1zM42,30h1v1h-1zM43,30h1v1h-1zM44,30h1v1h-1zM45,30h1v1h-1zM48,30h1v1h-1zM49,30h1v1h-1zM51,30h1v1h-1zM52,30h1v1h-1zM2,31h1v1h-1zM3,31h1v1h-1zM6,31h1v1h-1zM7,31h1v1h-1zM8,31h1v1h-1zM9,31h1v1h-1zM17,31h1v1h-1zM19,31h1v1h-1zM20,31h1v1h-1zM21,31h1v1h-1zM22,31h1v1h-1zM23,31h1v1h-1zM26,31h1v1h-1zM27,31h1v1h-1zM29,31h1v1h-1zM35,31h1v1h-1zM37,31h1v1h-1zM39,31h1v1h-1zM41,31h1v1h-1zM42,31h1v1h-1zM43,31h1v1h-1zM44,31h1v1h-1zM48,31h1v1h-1zM50,31h1v1h-1zM2,32h1v1h-1zM3,32h1v1h-1zM4,32h1v1h-1zM5,32h1v1h-1zM6,32h1v1h-1zM8,32h1v1h-1zM9,32h1v1h-1zM13,32h1v1h-1zM14,32h1v1h-1zM17,32h1v1h-1zM18,32h1v1h-1zM19,32h1v1h-1zM20,32h1v1h-1zM21,32h1v1h-1zM24,32h1v1h-1zM25,32h1v1h-1zM27,32h1v1h-1zM28,32h1v1h-1zM30,32h1v1h-1zM34,32h1v1h-1zM35,32h1v1h-1zM37,32h1v1h-1zM39,32h1v1h-1zM40,32h1v1h-1zM41,32h1v1h-1zM43,32h1v1h-1zM44,32h1v1h-1zM46,32h1v1h-1zM47,32h1v1h-1zM48,32h1v1h-1zM50,32h1v1h-1zM1,33h1v1h-1zM2,33h1v1h-1zM3,33h1v1h-1zM4,33h1v1h-1zM5,33h1v1h-1zM7,33h1v1h-1zM8,33h1v1h-1zM14,33h1v1h-1zM15,33h1v1h-1zM17,33h1v1h-1zM18,33h1v1h-1zM20,33h1v1h-1zM25,33h1v1h-1zM26,33h1v1h-1zM27,33h1v1h-1zM28,33h1v1h-1zM32,33h1v1h-1zM34,33h1v1h-1zM35,33h1v1h-1zM37,33h1v1h-1zM39,33h1v1h-1zM43,33h1v1h-1zM46,33h1v1h-1zM49,33h1v1h-1zM51,33h1v1h-1zM52,33h1v1h-1zM53,33h1v1h-1zM1,34h1v1h-1zM3,34h1v1h-1zM4,34h1v1h-1zM5,34h1v1h-1zM6,34h1v1h-1zM8,34h1v1h-1zM9,34h1v1h-1zM10,34h1v1h-1zM12,34h1v1h-1zM13,34h1v1h-1zM15,34h1v1h-1zM16,34h1v1h-1zM18,34h1v1h-1zM20,34h1v1h-1zM21,34h1v1h-1zM22,34h1v1h-1zM28,34h1v1h-1zM30,34h1v1h-1zM32,34h1v1h-1zM33,34h1v1h-1zM34,34h1v1h-1zM41,34h1v1h-1zM42,34h1v1h-1zM43,34h1v1h-1zM44,34h1v1h-1zM45,34h1v1h-1zM46,34h1v1h-1zM48,34h1v1h-1zM49,34h1v1h-1zM53,34h1v1h-1zM1,35h1v1h-1zM2,35h1v1h-1zM4,35h1v1h-1zM5,35h1v1h-1zM7,35h1v1h-1zM8,35h1v1h-1zM10,35h1v1h-1zM16,35h1v1h-1zM17,35h1v1h-1zM18,35h1v1h-1zM22,35h1v1h-1zM25,35h1v1h-1zM28,35h1v1h-1zM29,35h1v1h-1zM31,35h1v1h-1zM33,35h1v1h-1zM34,35h1v1h-1zM35,35h1v1h-1zM37,35h1v1h-1zM39,35h1v1h-1zM41,35h1v1h-1zM43,35h1v1h-1zM45,35h1v1h-1zM49,35h1v1h-1zM1,36h1v1h-1zM2,36h1v1h-1zM4,36h1v1h-1zM11,36h1v1h-1zM14,36h1v1h-1zM18,36h1v1h-1zM20,36h1v1h-1zM24,36h1v1h-1zM26,36h1v1h-1zM31,36h1v1h-1zM33,36h1v1h-1zM34,36h1v1h-1zM38,36h1v1h-1zM39,36h1v1h-1zM43,36h1v1h-1zM44,36h1v1h-1zM46,36h1v1h-1zM49,36h1v1h-1zM3,37h1v1h-1zM4,37h1v1h-1zM5,37h1v1h-1zM6,37h1v1h-1zM7,37h1v1h-1zM10,37h1v1h-1zM14,37h1v1h-1zM16,37h1v1h-1zM17,37h1v1h-1zM19,37h1v1h-1zM20,37h1v1h-1zM21,37h1v1h-1zM25,37h1v1h-1zM26,37h1v1h-1zM28,37h1v1h-1zM31,37h1v1h-1zM32,37h1v1h-1zM36,37h1v1h-1zM37,37h1v1h-1zM38,37h1v1h-1zM39,37h1v1h-1zM42,37h1v1h-1zM45,37h1v1h-1zM46,37h1v1h-1zM47,37h1v1h-1zM48,37h1v1h-1zM50,37h1v1h-1zM51,37h1v1h-1zM52,37h1v1h-1zM1,38h1v1h-1zM2,38h1v1h-1zM6,38h1v1h-1zM9,38h1v1h-1zM10,38h1v1h-1zM11,38h1v1h-1zM12,38h1v1h-1zM14,38h1v1h-1zM16,38h1v1h-1zM18,38h1v1h-1zM23,38h1v1h-1zM24,38h1v1h-1zM27,38h1v1h-1zM28,38h1v1h-1zM30,38h1v1h-1zM31,38h1v1h-1zM32,38h1v1h-1zM34,38h1v1h-1zM36,38h1v1h-1zM38,38h1v1h-1zM41,38h1v1h-1zM43,38h1v1h-1zM48,38h1v1h-1zM49,38h1v1h-1zM52,38h1v1h-1zM53,38h1v1h-1zM1,39h1v1h-1zM2,39h1v1h-1zM3,39h1v1h-1zM5,39h1v1h-1zM7,39h1v1h-1zM8,39h1v1h-1zM9,39h1v1h-1zM10,39h1v1h-1zM11,39h1v1h-1zM14,39h1v1h-1zM17,39h1v1h-1zM18,39h1v1h-1zM20,39h1v1h-1zM22,39h1v1h-1zM25,39h1v1h-1zM28,39h1v1h-1zM29,39h1v1h-1zM31,39h1v1h-1zM32,39h1v1h-1zM37,39h1v1h-1zM39,39h1v1h-1zM41,39h1v1h-1zM43,39h1v1h-1zM48,39h1v1h-1zM50,39h1v1h-1zM52,39h1v1h-1zM1,40h1v1h-1zM4,40h1v1h-1zM10,40h1v1h-1zM11,40h1v1h-1zM13,40h1v1h-1zM14,40h1v1h-1zM21,40h1v1h-1zM24,40h1v1h-1zM25,40h1v1h-1zM26,40h1v1h-1zM28,40h1v1h-1zM30,40h1v1h-1zM31,40h1v1h-1zM34,40h1v1h-1zM35,40h1v1h-1zM37,40h1v1h-1zM38,40h1v1h-1zM39,40h1v1h-1zM40,40h1v1h-1zM42,40h1v1h-1zM44,40h1v1h-1zM45,40h1v1h-1zM46,40h1v1h-1zM47,40h1v1h-1zM48,40h1v1h-1zM50,40h1v1h-1zM53,40h1v1h-1zM1,41h1v1h-1zM2,41h1v1h-1zM4,41h1v1h-1zM6,41h1v1h-1zM7,41h1v1h-1zM9,41h1v1h-1zM10,41h1v1h-1zM11,41h1v1h-1zM12,41h1v1h-1zM14,41h1v1h-1zM18,41h1v1h-1zM19,41h1v1h-1zM20,41h1v1h-1zM22,41h1v1h-1zM25,41h1v1h-1zM26,41h1v1h-1zM31,41h1v1h-1zM34,41h1v1h-1zM35,41h1v1h-1zM36,41h1v1h-1zM37,41h1v1h-1zM39,41h1v1h-1zM41,41h1v1h-1zM46,41h1v1h-1zM49,41h1v1h-1zM53,41h1v1h-1zM1,42h1v1h-1zM6,42h1v1h-1zM8,42h1v1h-1zM9,42h1v1h-1zM10,42h1v1h-1zM11,42h1v1h-1zM12,42h1v1h-1zM14,42h1v1h-1zM15,42h1v1h-1zM16,42h1v1h-1zM17,42h1v1h-1zM20,42h1v1h-1zM24,42h1v1h-1zM26,42h1v1h-1zM27,42h1v1h-1zM30,42h1v1h-1zM31,42h1v1h-1zM33,42h1v1h-1zM36,42h1v1h-1zM37,42h1v1h-1zM38,42h1v1h-1zM39,42h1v1h-1zM40,42h1v1h-1zM41,42h1v1h-1zM42,42h1v1h-1zM43,42h1v1h-1zM45,42h1v1h-1zM46,42h1v1h-1zM48,42h1v1h-1zM49,42h1v1h-1zM51,42h1v1h-1zM52,42h1v1h-1zM53,42h1v1h-1zM1,43h1v1h-1zM2,43h1v1h-1zM4,43h1v1h-1zM5,43h1v1h-1zM6,43h1v1h-1zM7,43h1v1h-1zM9,43h1v1h-1zM12,43h1v1h-1zM13,43h1v1h-1zM14,43h1v1h-1zM18,43h1v1h-1zM19,43h1v1h-1zM20,43h1v1h-1zM21,43h1v1h-1zM22,43h1v1h-1zM25,43h1v1h-1zM28,43h1v1h-1zM29,43h1v1h-1zM32,43h1v1h-1zM33,43h1v1h-1zM34,43h1v1h-1zM37,43h1v1h-1zM41,43h1v1h-1zM43,43h1v1h-1zM45,43h1v1h-1zM46,43h1v1h-1zM49,43h1v1h-1zM50,43h1v1h-1zM51,43h1v1h-1zM52,43h1v1h-1zM2,44h1v1h-1zM3,44h1v1h-1zM9,44h1v1h-1zM10,44h1v1h-1zM11,44h1v1h-1zM12,44h1v1h-1zM15,44h1v1h-1zM16,44h1v1h-1zM20,44h1v1h-1zM23,44h1v1h-1zM24,44h1v1h-1zM33,44h1v1h-1zM35,44h1v1h-1zM36,44h1v1h-1zM37,44h1v1h-1zM39,44h1v1h-1zM40,44h1v1h-1zM43,44h1v1h-1zM45,44h1v1h-1zM47,44h1v1h-1zM48,44h1v1h-1zM50,44h1v1h-1zM52,44h1v1h-1zM53,44h1v1h-1zM4,45h1v1h-1zM7,45h1v1h-1zM8,45h1v1h-1zM10,45h1v1h-1zM11,45h1v1h-1zM12,45h1v1h-1zM13,45h1v1h-1zM15,45h1v1h-1zM17,45h1v1h-1zM18,45h1v1h-1zM19,45h1v1h-1zM24,45h1v1h-1zM25,45h1v1h-1zM26,45h1v1h-1zM27,45h1v1h-1zM28,45h1v1h-1zM29,45h1v1h-1zM30,45h1v1h-1zM31,45h1v1h-1zM32,45h1v1h-1zM35,45h1v1h-1zM37,45h1v1h-1zM39,45h1v1h-1zM42,45h1v1h-1zM43,45h1v1h-1zM45,45h1v1h-1zM46,45h1v1h-1zM47,45h1v1h-1zM48,45h1v1h-1zM49,45h1v1h-1zM51,45h1v1h-1zM52,45h1v1h-1zM53,45h1v1h-1zM9,46h1v1h-1zM10,46h1v1h-1zM12,46h1v1h-1zM13,46h1v1h-1zM16,46h1v1h-1zM18,46h1v1h-1zM21,46h1v1h-1zM22,46h1v1h-1zM23,46h1v1h-1zM24,46h1v1h-1zM25,46h1v1h-1zM29,46h1v1h-1zM30,46h1v1h-1zM31,46h1v1h-1zM33,46h1v1h-1zM36,46h1v1h-1zM37,46h1v1h-1zM38,46h1v1h-1zM41,46h1v1h-1zM43,46h1v1h-1zM44,46h1v1h-1zM45,46h1v1h-1zM49,46h1v1h-1zM50,46h1v1h-1zM51,46h1v1h-1zM53,46h1v1h-1zM1,47h1v1h-1zM2,47h1v1h-1zM3,47h1v1h-1zM4,47h1v1h-1zM5,47h1v1h-1zM6,47h1v1h-1zM7,47h1v1h-1zM11,47h1v1h-1zM13,47h1v1h-1zM16,47h1v1h-1zM18,47h1v1h-1zM20,47h1v1h-1zM21,47h1v1h-1zM23,47h1v1h-1zM25,47h1v1h-1zM27,47h1v1h-1zM29,47h1v1h-1zM30,47h1v1h-1zM32,47h1v1h-1zM33,47h1v1h-1zM34,47h1v1h-1zM35,47h1v1h-1zM37,47h1v1h-1zM40,47h1v1h-1zM42,47h1v1h-1zM43,47h1v1h-1zM45,47h1v1h-1zM47,47h1v1h-1zM49,47h1v1h-1zM51,47h1v1h-1zM1,48h1v1h-1zM7,48h1v1h-1zM9,48h1v1h-1zM11,48h1v1h-1zM12,48h1v1h-1zM14,48h1v1h-1zM15,48h1v1h-1zM17,48h1v1h-1zM19,48h1v1h-1zM21,48h1v1h-1zM22,48h1v1h-1zM23,48h1v1h-1zM25,48h1v1h-1zM29,48h1v1h-1zM30,48h1v1h-1zM34,48h1v1h-1zM39,48h1v1h-1zM40,48h1v1h-1zM43,48h1v1h-1zM44,48h1v1h-1zM45,48h1v1h-1zM49,48h1v1h-1zM1,49h1v1h-1zM3,49h1v1h-1zM4,49h1v1h-1zM5,49h1v1h-1zM7,49h1v1h-1zM9,49h1v1h-1zM11,49h1v1h-1zM13,49h1v1h-1zM15,49h1v1h-1zM16,49h1v1h-1zM19,49h1v1h-1zM20,49h1v1h-1zM23,49h1v1h-1zM25,49h1v1h-1zM26,49h1v1h-1zM27,49h1v1h-1zM28,49h1v1h-1zM29,49h1v1h-1zM32,49h1v1h-1zM33,49h1v1h-1zM34,49h1v1h-1zM35,49h1v1h-1zM36,49h1v1h-1zM37,49h1v1h-1zM38,49h1v1h-1zM44,49h1v1h-1zM45,49h1v1h-1zM46,49h1v1h-1zM47,49h1v1h-1zM48,49h1v1h-1zM49,49h1v1h-1zM51,49h1v1h-1zM52,49h1v1h-1zM1,50h1v1h-1zM3,50h1v1h-1zM4,50h1v1h-1zM5,50h1v1h-1zM7,50h1v1h-1zM9,50h1v1h-1zM10,50h1v1h-1zM11,50h1v1h-1zM12,50h1v1h-1zM18,50h1v1h-1zM19,50h1v1h-1zM20,50h1v1h-1zM22,50h1v1h-1zM24,50h1v1h-1zM25,50h1v1h-1zM26,50h1v1h-1zM28,50h1v1h-1zM29,50h1v1h-1zM31,50h1v1h-1zM33,50h1v1h-1zM36,50h1v1h-1zM38,50h1v1h-1zM40,50h1v1h-1zM41,50h1v1h-1zM42,50h1v1h-1zM43,50h1v1h-1zM45,50h1v1h-1zM48,50h1v1h-1zM50,50h1v1h-1zM51,50h1v1h-1zM1,51h1v1h-1zM3,51h1v1h-1zM4,51h1v1h-1zM5,51h1v1h-1zM7,51h1v1h-1zM9,51h1v1h-1zM10,51h1v1h-1zM11,51h1v1h-1zM13,51h1v1h-1zM15,51h1v1h-1zM16,51h1v1h-1zM21,51h1v1h-1zM23,51h1v1h-1zM25,51h1v1h-1zM26,51h1v1h-1zM28,51h1v1h-1zM30,51h1v1h-1zM32,51h1v1h-1zM33,51h1v1h-1zM34,51h1v1h-1zM35,51h1v1h-1zM39,51h1v1h-1zM40,51h1v1h-1zM41,51h1v1h-1zM43,51h1v1h-1zM44,51h1v1h-1zM46,51h1v1h-1zM49,51h1v1h-1zM50,51h1v1h-1zM51,51h1v1h-1zM52,51h1v1h-1zM53,51h1v1h-1zM1,52h1v1h-1zM7,52h1v1h-1zM10,52h1v1h-1zM11,52h1v1h-1zM12,52h1v1h-1zM13,52h1v1h-1zM14,52h1v1h-1zM15,52h1v1h-1zM20,52h1v1h-1zM21,52h1v1h-1zM22,52h1v1h-1zM24,52h1v1h-1zM25,52h1v1h-1zM31,52h1v1h-1zM32,52h1v1h-1zM34,52h1v1h-1zM36,52h1v1h-1zM40,52h1v1h-1zM41,52h1v1h-1zM43,52h1v1h-1zM46,52h1v1h-1zM48,52h1v1h-1zM52,52h1v1h-1zM1,53h1v1h-1zM2,53h1v1h-1zM3,53h1v1h-1zM4,53h1v1h-1zM5,53h1v1h-1zM6,53h1v1h-1zM7,53h1v1h-1zM9,53h1v1h-1zM10,53h1v1h-1zM11,53h1v1h-1zM17,53h1v1h-1zM18,53h1v1h-1zM19,53h1v1h-1zM21,53h1v1h-1zM22,53h1v1h-1zM23,53h1v1h-1zM24,53h1v1h-1zM25,53h1v1h-1zM28,53h1v1h-1zM30,53h1v1h-1zM31,53h1v1h-1zM32,53h1v1h-1zM34,53h1v1h-1zM37,53h1v1h-1zM42,53h1v1h-1zM44,53h1v1h-1zM47,53h1v1h-1zM48,53h1v1h-1zM49,53h1v1h-1zM51,53h1v1h-1z" fill="#000000"/></svg>
+          </div>
+        </div>
+      </div>
+    </article>
+  
+
+    <article class="item-label">
+      <header class="label-header">
+        <div class="header-logo-box">
+          <img src="images.png" alt="Logo Kemendikbud">
+        </div>
+        <div class="header-text-box">
+          <div class="instansi-line1">KEMENTERIAN PENDIDIKAN DASAR DAN</div>
+          <div class="instansi-line2">MENENGAH</div>
+          <div class="satker-code-line">138041000693242000KD.2019</div>
+        </div>
+        <div class="header-logo-box" style="visibility: hidden;" aria-hidden="true"></div>
+      </header>
+
+      <div class="label-body">
+        <div class="body-info-left">
+          <div>
+            <div class="info-top-row">
+              <span class="info-kode-barang">3070201003</span>
+              <span class="info-nup">NUP: 3</span>
+            </div>
+            <div class="info-nama-barang" title="Audio/Vidio Comunication">Audio/Vidio Comunication</div>
+          </div>
+          <div class="info-merk-tipe" title="VIDIO WALL 46 INCH">VIDIO WALL 46 INCH</div>
+        </div>
+
+        <div class="body-qr-right">
+          <div class="qr-box" title="QR Barcode BMN">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 55 55" width="85" height="85" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="#ffffff"/><path d="M1,1h1v1h-1zM2,1h1v1h-1zM3,1h1v1h-1zM4,1h1v1h-1zM5,1h1v1h-1zM6,1h1v1h-1zM7,1h1v1h-1zM11,1h1v1h-1zM15,1h1v1h-1zM17,1h1v1h-1zM18,1h1v1h-1zM20,1h1v1h-1zM21,1h1v1h-1zM25,1h1v1h-1zM30,1h1v1h-1zM31,1h1v1h-1zM32,1h1v1h-1zM33,1h1v1h-1zM38,1h1v1h-1zM39,1h1v1h-1zM40,1h1v1h-1zM41,1h1v1h-1zM42,1h1v1h-1zM43,1h1v1h-1zM47,1h1v1h-1zM48,1h1v1h-1zM49,1h1v1h-1zM50,1h1v1h-1zM51,1h1v1h-1zM52,1h1v1h-1zM53,1h1v1h-1zM1,2h1v1h-1zM7,2h1v1h-1zM11,2h1v1h-1zM12,2h1v1h-1zM14,2h1v1h-1zM16,2h1v1h-1zM17,2h1v1h-1zM20,2h1v1h-1zM22,2h1v1h-1zM23,2h1v1h-1zM24,2h1v1h-1zM25,2h1v1h-1zM26,2h1v1h-1zM33,2h1v1h-1zM34,2h1v1h-1zM37,2h1v1h-1zM41,2h1v1h-1zM43,2h1v1h-1zM44,2h1v1h-1zM47,2h1v1h-1zM53,2h1v1h-1zM1,3h1v1h-1zM3,3h1v1h-1zM4,3h1v1h-1zM5,3h1v1h-1zM7,3h1v1h-1zM9,3h1v1h-1zM10,3h1v1h-1zM11,3h1v1h-1zM12,3h1v1h-1zM13,3h1v1h-1zM14,3h1v1h-1zM16,3h1v1h-1zM20,3h1v1h-1zM22,3h1v1h-1zM23,3h1v1h-1zM25,3h1v1h-1zM28,3h1v1h-1zM30,3h1v1h-1zM33,3h1v1h-1zM36,3h1v1h-1zM37,3h1v1h-1zM38,3h1v1h-1zM39,3h1v1h-1zM40,3h1v1h-1zM44,3h1v1h-1zM47,3h1v1h-1zM49,3h1v1h-1zM50,3h1v1h-1zM51,3h1v1h-1zM53,3h1v1h-1zM1,4h1v1h-1zM3,4h1v1h-1zM4,4h1v1h-1zM5,4h1v1h-1zM7,4h1v1h-1zM9,4h1v1h-1zM17,4h1v1h-1zM19,4h1v1h-1zM22,4h1v1h-1zM26,4h1v1h-1zM30,4h1v1h-1zM32,4h1v1h-1zM34,4h1v1h-1zM37,4h1v1h-1zM39,4h1v1h-1zM43,4h1v1h-1zM45,4h1v1h-1zM47,4h1v1h-1zM49,4h1v1h-1zM50,4h1v1h-1zM51,4h1v1h-1zM53,4h1v1h-1zM1,5h1v1h-1zM3,5h1v1h-1zM4,5h1v1h-1zM5,5h1v1h-1zM7,5h1v1h-1zM9,5h1v1h-1zM11,5h1v1h-1zM13,5h1v1h-1zM15,5h1v1h-1zM17,5h1v1h-1zM21,5h1v1h-1zM22,5h1v1h-1zM23,5h1v1h-1zM24,5h1v1h-1zM25,5h1v1h-1zM26,5h1v1h-1zM27,5h1v1h-1zM28,5h1v1h-1zM29,5h1v1h-1zM30,5h1v1h-1zM31,5h1v1h-1zM32,5h1v1h-1zM36,5h1v1h-1zM37,5h1v1h-1zM40,5h1v1h-1zM41,5h1v1h-1zM43,5h1v1h-1zM47,5h1v1h-1zM49,5h1v1h-1zM50,5h1v1h-1zM51,5h1v1h-1zM53,5h1v1h-1zM1,6h1v1h-1zM7,6h1v1h-1zM9,6h1v1h-1zM10,6h1v1h-1zM11,6h1v1h-1zM13,6h1v1h-1zM18,6h1v1h-1zM20,6h1v1h-1zM23,6h1v1h-1zM25,6h1v1h-1zM29,6h1v1h-1zM30,6h1v1h-1zM31,6h1v1h-1zM32,6h1v1h-1zM33,6h1v1h-1zM34,6h1v1h-1zM35,6h1v1h-1zM37,6h1v1h-1zM39,6h1v1h-1zM40,6h1v1h-1zM41,6h1v1h-1zM43,6h1v1h-1zM47,6h1v1h-1zM53,6h1v1h-1zM1,7h1v1h-1zM2,7h1v1h-1zM3,7h1v1h-1zM4,7h1v1h-1zM5,7h1v1h-1zM6,7h1v1h-1zM7,7h1v1h-1zM9,7h1v1h-1zM11,7h1v1h-1zM13,7h1v1h-1zM15,7h1v1h-1zM17,7h1v1h-1zM19,7h1v1h-1zM21,7h1v1h-1zM23,7h1v1h-1zM25,7h1v1h-1zM27,7h1v1h-1zM29,7h1v1h-1zM31,7h1v1h-1zM33,7h1v1h-1zM35,7h1v1h-1zM37,7h1v1h-1zM39,7h1v1h-1zM41,7h1v1h-1zM43,7h1v1h-1zM45,7h1v1h-1zM47,7h1v1h-1zM48,7h1v1h-1zM49,7h1v1h-1zM50,7h1v1h-1zM51,7h1v1h-1zM52,7h1v1h-1zM53,7h1v1h-1zM9,8h1v1h-1zM11,8h1v1h-1zM12,8h1v1h-1zM13,8h1v1h-1zM16,8h1v1h-1zM17,8h1v1h-1zM19,8h1v1h-1zM21,8h1v1h-1zM22,8h1v1h-1zM23,8h1v1h-1zM24,8h1v1h-1zM25,8h1v1h-1zM29,8h1v1h-1zM30,8h1v1h-1zM35,8h1v1h-1zM38,8h1v1h-1zM43,8h1v1h-1zM1,9h1v1h-1zM3,9h1v1h-1zM4,9h1v1h-1zM5,9h1v1h-1zM6,9h1v1h-1zM7,9h1v1h-1zM11,9h1v1h-1zM14,9h1v1h-1zM15,9h1v1h-1zM16,9h1v1h-1zM18,9h1v1h-1zM19,9h1v1h-1zM21,9h1v1h-1zM25,9h1v1h-1zM26,9h1v1h-1zM27,9h1v1h-1zM28,9h1v1h-1zM29,9h1v1h-1zM32,9h1v1h-1zM33,9h1v1h-1zM36,9h1v1h-1zM37,9h1v1h-1zM38,9h1v1h-1zM43,9h1v1h-1zM47,9h1v1h-1zM48,9h1v1h-1zM49,9h1v1h-1zM50,9h1v1h-1zM51,9h1v1h-1zM1,10h1v1h-1zM4,10h1v1h-1zM5,10h1v1h-1zM8,10h1v1h-1zM9,10h1v1h-1zM12,10h1v1h-1zM13,10h1v1h-1zM18,10h1v1h-1zM20,10h1v1h-1zM21,10h1v1h-1zM22,10h1v1h-1zM23,10h1v1h-1zM24,10h1v1h-1zM25,10h1v1h-1zM29,10h1v1h-1zM31,10h1v1h-1zM33,10h1v1h-1zM36,10h1v1h-1zM38,10h1v1h-1zM42,10h1v1h-1zM43,10h1v1h-1zM44,10h1v1h-1zM50,10h1v1h-1zM52,10h1v1h-1zM1,11h1v1h-1zM2,11h1v1h-1zM5,11h1v1h-1zM7,11h1v1h-1zM9,11h1v1h-1zM10,11h1v1h-1zM11,11h1v1h-1zM12,11h1v1h-1zM18,11h1v1h-1zM19,11h1v1h-1zM25,11h1v1h-1zM27,11h1v1h-1zM28,11h1v1h-1zM30,11h1v1h-1zM32,11h1v1h-1zM33,11h1v1h-1zM34,11h1v1h-1zM35,11h1v1h-1zM37,11h1v1h-1zM39,11h1v1h-1zM42,11h1v1h-1zM43,11h1v1h-1zM49,11h1v1h-1zM1,12h1v1h-1zM2,12h1v1h-1zM3,12h1v1h-1zM4,12h1v1h-1zM10,12h1v1h-1zM15,12h1v1h-1zM16,12h1v1h-1zM17,12h1v1h-1zM19,12h1v1h-1zM20,12h1v1h-1zM21,12h1v1h-1zM22,12h1v1h-1zM24,12h1v1h-1zM25,12h1v1h-1zM26,12h1v1h-1zM31,12h1v1h-1zM33,12h1v1h-1zM34,12h1v1h-1zM35,12h1v1h-1zM37,12h1v1h-1zM41,12h1v1h-1zM42,12h1v1h-1zM50,12h1v1h-1zM52,12h1v1h-1zM53,12h1v1h-1zM1,13h1v1h-1zM3,13h1v1h-1zM4,13h1v1h-1zM6,13h1v1h-1zM7,13h1v1h-1zM9,13h1v1h-1zM14,13h1v1h-1zM15,13h1v1h-1zM17,13h1v1h-1zM18,13h1v1h-1zM19,13h1v1h-1zM20,13h1v1h-1zM24,13h1v1h-1zM25,13h1v1h-1zM27,13h1v1h-1zM30,13h1v1h-1zM31,13h1v1h-1zM36,13h1v1h-1zM37,13h1v1h-1zM42,13h1v1h-1zM44,13h1v1h-1zM45,13h1v1h-1zM46,13h1v1h-1zM47,13h1v1h-1zM48,13h1v1h-1zM49,13h1v1h-1zM51,13h1v1h-1zM52,13h1v1h-1zM1,14h1v1h-1zM2,14h1v1h-1zM4,14h1v1h-1zM9,14h1v1h-1zM10,14h1v1h-1zM12,14h1v1h-1zM14,14h1v1h-1zM15,14h1v1h-1zM20,14h1v1h-1zM22,14h1v1h-1zM28,14h1v1h-1zM31,14h1v1h-1zM33,14h1v1h-1zM34,14h1v1h-1zM43,14h1v1h-1zM52,14h1v1h-1zM53,14h1v1h-1zM1,15h1v1h-1zM3,15h1v1h-1zM4,15h1v1h-1zM7,15h1v1h-1zM9,15h1v1h-1zM10,15h1v1h-1zM11,15h1v1h-1zM13,15h1v1h-1zM17,15h1v1h-1zM20,15h1v1h-1zM23,15h1v1h-1zM27,15h1v1h-1zM30,15h1v1h-1zM31,15h1v1h-1zM35,15h1v1h-1zM38,15h1v1h-1zM39,15h1v1h-1zM41,15h1v1h-1zM46,15h1v1h-1zM47,15h1v1h-1zM49,15h1v1h-1zM50,15h1v1h-1zM51,15h1v1h-1zM52,15h1v1h-1zM1,16h1v1h-1zM2,16h1v1h-1zM3,16h1v1h-1zM4,16h1v1h-1zM8,16h1v1h-1zM9,16h1v1h-1zM10,16h1v1h-1zM11,16h1v1h-1zM14,16h1v1h-1zM16,16h1v1h-1zM17,16h1v1h-1zM18,16h1v1h-1zM20,16h1v1h-1zM21,16h1v1h-1zM22,16h1v1h-1zM24,16h1v1h-1zM25,16h1v1h-1zM26,16h1v1h-1zM28,16h1v1h-1zM31,16h1v1h-1zM33,16h1v1h-1zM35,16h1v1h-1zM36,16h1v1h-1zM38,16h1v1h-1zM39,16h1v1h-1zM40,16h1v1h-1zM41,16h1v1h-1zM43,16h1v1h-1zM46,16h1v1h-1zM52,16h1v1h-1zM53,16h1v1h-1zM1,17h1v1h-1zM6,17h1v1h-1zM7,17h1v1h-1zM9,17h1v1h-1zM10,17h1v1h-1zM11,17h1v1h-1zM13,17h1v1h-1zM14,17h1v1h-1zM18,17h1v1h-1zM20,17h1v1h-1zM21,17h1v1h-1zM24,17h1v1h-1zM25,17h1v1h-1zM27,17h1v1h-1zM28,17h1v1h-1zM30,17h1v1h-1zM31,17h1v1h-1zM34,17h1v1h-1zM35,17h1v1h-1zM36,17h1v1h-1zM37,17h1v1h-1zM40,17h1v1h-1zM43,17h1v1h-1zM45,17h1v1h-1zM46,17h1v1h-1zM47,17h1v1h-1zM49,17h1v1h-1zM50,17h1v1h-1zM51,17h1v1h-1zM52,17h1v1h-1zM2,18h1v1h-1zM5,18h1v1h-1zM6,18h1v1h-1zM9,18h1v1h-1zM11,18h1v1h-1zM13,18h1v1h-1zM15,18h1v1h-1zM16,18h1v1h-1zM19,18h1v1h-1zM21,18h1v1h-1zM22,18h1v1h-1zM23,18h1v1h-1zM25,18h1v1h-1zM27,18h1v1h-1zM29,18h1v1h-1zM31,18h1v1h-1zM32,18h1v1h-1zM33,18h1v1h-1zM35,18h1v1h-1zM36,18h1v1h-1zM37,18h1v1h-1zM38,18h1v1h-1zM40,18h1v1h-1zM41,18h1v1h-1zM43,18h1v1h-1zM44,18h1v1h-1zM46,18h1v1h-1zM49,18h1v1h-1zM50,18h1v1h-1zM1,19h1v1h-1zM2,19h1v1h-1zM3,19h1v1h-1zM4,19h1v1h-1zM5,19h1v1h-1zM7,19h1v1h-1zM8,19h1v1h-1zM10,19h1v1h-1zM12,19h1v1h-1zM16,19h1v1h-1zM18,19h1v1h-1zM19,19h1v1h-1zM23,19h1v1h-1zM24,19h1v1h-1zM27,19h1v1h-1zM33,19h1v1h-1zM34,19h1v1h-1zM37,19h1v1h-1zM39,19h1v1h-1zM42,19h1v1h-1zM44,19h1v1h-1zM47,19h1v1h-1zM48,19h1v1h-1zM50,19h1v1h-1zM51,19h1v1h-1zM1,20h1v1h-1zM2,20h1v1h-1zM4,20h1v1h-1zM6,20h1v1h-1zM8,20h1v1h-1zM9,20h1v1h-1zM11,20h1v1h-1zM13,20h1v1h-1zM15,20h1v1h-1zM16,20h1v1h-1zM22,20h1v1h-1zM23,20h1v1h-1zM25,20h1v1h-1zM30,20h1v1h-1zM34,20h1v1h-1zM35,20h1v1h-1zM37,20h1v1h-1zM45,20h1v1h-1zM46,20h1v1h-1zM48,20h1v1h-1zM50,20h1v1h-1zM52,20h1v1h-1zM3,21h1v1h-1zM4,21h1v1h-1zM6,21h1v1h-1zM7,21h1v1h-1zM9,21h1v1h-1zM11,21h1v1h-1zM12,21h1v1h-1zM14,21h1v1h-1zM17,21h1v1h-1zM18,21h1v1h-1zM19,21h1v1h-1zM20,21h1v1h-1zM21,21h1v1h-1zM23,21h1v1h-1zM24,21h1v1h-1zM27,21h1v1h-1zM28,21h1v1h-1zM30,21h1v1h-1zM32,21h1v1h-1zM36,21h1v1h-1zM37,21h1v1h-1zM38,21h1v1h-1zM40,21h1v1h-1zM42,21h1v1h-1zM43,21h1v1h-1zM45,21h1v1h-1zM46,21h1v1h-1zM49,21h1v1h-1zM52,21h1v1h-1zM1,22h1v1h-1zM3,22h1v1h-1zM4,22h1v1h-1zM6,22h1v1h-1zM8,22h1v1h-1zM9,22h1v1h-1zM11,22h1v1h-1zM12,22h1v1h-1zM16,22h1v1h-1zM18,22h1v1h-1zM21,22h1v1h-1zM22,22h1v1h-1zM24,22h1v1h-1zM25,22h1v1h-1zM26,22h1v1h-1zM27,22h1v1h-1zM28,22h1v1h-1zM30,22h1v1h-1zM31,22h1v1h-1zM33,22h1v1h-1zM34,22h1v1h-1zM36,22h1v1h-1zM37,22h1v1h-1zM42,22h1v1h-1zM43,22h1v1h-1zM46,22h1v1h-1zM49,22h1v1h-1zM50,22h1v1h-1zM51,22h1v1h-1zM53,22h1v1h-1zM1,23h1v1h-1zM2,23h1v1h-1zM7,23h1v1h-1zM8,23h1v1h-1zM9,23h1v1h-1zM10,23h1v1h-1zM12,23h1v1h-1zM17,23h1v1h-1zM18,23h1v1h-1zM20,23h1v1h-1zM22,23h1v1h-1zM25,23h1v1h-1zM26,23h1v1h-1zM29,23h1v1h-1zM33,23h1v1h-1zM34,23h1v1h-1zM36,23h1v1h-1zM38,23h1v1h-1zM40,23h1v1h-1zM43,23h1v1h-1zM47,23h1v1h-1zM49,23h1v1h-1zM50,23h1v1h-1zM51,23h1v1h-1zM52,23h1v1h-1zM2,24h1v1h-1zM4,24h1v1h-1zM6,24h1v1h-1zM12,24h1v1h-1zM13,24h1v1h-1zM14,24h1v1h-1zM17,24h1v1h-1zM18,24h1v1h-1zM21,24h1v1h-1zM22,24h1v1h-1zM24,24h1v1h-1zM28,24h1v1h-1zM29,24h1v1h-1zM30,24h1v1h-1zM31,24h1v1h-1zM33,24h1v1h-1zM34,24h1v1h-1zM35,24h1v1h-1zM37,24h1v1h-1zM40,24h1v1h-1zM42,24h1v1h-1zM46,24h1v1h-1zM47,24h1v1h-1zM48,24h1v1h-1zM49,24h1v1h-1zM50,24h1v1h-1zM52,24h1v1h-1zM1,25h1v1h-1zM2,25h1v1h-1zM3,25h1v1h-1zM4,25h1v1h-1zM5,25h1v1h-1zM6,25h1v1h-1zM7,25h1v1h-1zM8,25h1v1h-1zM9,25h1v1h-1zM17,25h1v1h-1zM18,25h1v1h-1zM20,25h1v1h-1zM25,25h1v1h-1zM26,25h1v1h-1zM27,25h1v1h-1zM28,25h1v1h-1zM29,25h1v1h-1zM31,25h1v1h-1zM32,25h1v1h-1zM36,25h1v1h-1zM40,25h1v1h-1zM44,25h1v1h-1zM45,25h1v1h-1zM46,25h1v1h-1zM47,25h1v1h-1zM48,25h1v1h-1zM49,25h1v1h-1zM52,25h1v1h-1zM2,26h1v1h-1zM4,26h1v1h-1zM5,26h1v1h-1zM9,26h1v1h-1zM10,26h1v1h-1zM11,26h1v1h-1zM14,26h1v1h-1zM16,26h1v1h-1zM17,26h1v1h-1zM19,26h1v1h-1zM20,26h1v1h-1zM22,26h1v1h-1zM24,26h1v1h-1zM25,26h1v1h-1zM29,26h1v1h-1zM30,26h1v1h-1zM31,26h1v1h-1zM32,26h1v1h-1zM38,26h1v1h-1zM40,26h1v1h-1zM42,26h1v1h-1zM44,26h1v1h-1zM45,26h1v1h-1zM49,26h1v1h-1zM50,26h1v1h-1zM51,26h1v1h-1zM52,26h1v1h-1zM53,26h1v1h-1zM1,27h1v1h-1zM5,27h1v1h-1zM7,27h1v1h-1zM9,27h1v1h-1zM10,27h1v1h-1zM12,27h1v1h-1zM13,27h1v1h-1zM14,27h1v1h-1zM16,27h1v1h-1zM20,27h1v1h-1zM24,27h1v1h-1zM25,27h1v1h-1zM27,27h1v1h-1zM29,27h1v1h-1zM34,27h1v1h-1zM35,27h1v1h-1zM36,27h1v1h-1zM40,27h1v1h-1zM41,27h1v1h-1zM43,27h1v1h-1zM44,27h1v1h-1zM45,27h1v1h-1zM47,27h1v1h-1zM49,27h1v1h-1zM50,27h1v1h-1zM1,28h1v1h-1zM4,28h1v1h-1zM5,28h1v1h-1zM9,28h1v1h-1zM11,28h1v1h-1zM12,28h1v1h-1zM14,28h1v1h-1zM15,28h1v1h-1zM17,28h1v1h-1zM19,28h1v1h-1zM20,28h1v1h-1zM23,28h1v1h-1zM24,28h1v1h-1zM25,28h1v1h-1zM29,28h1v1h-1zM31,28h1v1h-1zM32,28h1v1h-1zM36,28h1v1h-1zM38,28h1v1h-1zM39,28h1v1h-1zM43,28h1v1h-1zM45,28h1v1h-1zM49,28h1v1h-1zM50,28h1v1h-1zM1,29h1v1h-1zM4,29h1v1h-1zM5,29h1v1h-1zM6,29h1v1h-1zM7,29h1v1h-1zM8,29h1v1h-1zM9,29h1v1h-1zM11,29h1v1h-1zM12,29h1v1h-1zM16,29h1v1h-1zM17,29h1v1h-1zM20,29h1v1h-1zM22,29h1v1h-1zM25,29h1v1h-1zM26,29h1v1h-1zM27,29h1v1h-1zM28,29h1v1h-1zM29,29h1v1h-1zM30,29h1v1h-1zM31,29h1v1h-1zM36,29h1v1h-1zM37,29h1v1h-1zM39,29h1v1h-1zM43,29h1v1h-1zM44,29h1v1h-1zM45,29h1v1h-1zM46,29h1v1h-1zM47,29h1v1h-1zM48,29h1v1h-1zM49,29h1v1h-1zM2,30h1v1h-1zM3,30h1v1h-1zM4,30h1v1h-1zM6,30h1v1h-1zM11,30h1v1h-1zM12,30h1v1h-1zM15,30h1v1h-1zM16,30h1v1h-1zM19,30h1v1h-1zM20,30h1v1h-1zM21,30h1v1h-1zM23,30h1v1h-1zM24,30h1v1h-1zM27,30h1v1h-1zM29,30h1v1h-1zM31,30h1v1h-1zM32,30h1v1h-1zM36,30h1v1h-1zM37,30h1v1h-1zM38,30h1v1h-1zM40,30h1v1h-1zM41,30h1v1h-1zM42,30h1v1h-1zM43,30h1v1h-1zM44,30h1v1h-1zM45,30h1v1h-1zM48,30h1v1h-1zM49,30h1v1h-1zM51,30h1v1h-1zM52,30h1v1h-1zM2,31h1v1h-1zM3,31h1v1h-1zM6,31h1v1h-1zM7,31h1v1h-1zM9,31h1v1h-1zM19,31h1v1h-1zM20,31h1v1h-1zM21,31h1v1h-1zM22,31h1v1h-1zM23,31h1v1h-1zM26,31h1v1h-1zM27,31h1v1h-1zM29,31h1v1h-1zM35,31h1v1h-1zM37,31h1v1h-1zM39,31h1v1h-1zM41,31h1v1h-1zM42,31h1v1h-1zM43,31h1v1h-1zM44,31h1v1h-1zM48,31h1v1h-1zM50,31h1v1h-1zM3,32h1v1h-1zM4,32h1v1h-1zM5,32h1v1h-1zM6,32h1v1h-1zM8,32h1v1h-1zM13,32h1v1h-1zM14,32h1v1h-1zM16,32h1v1h-1zM18,32h1v1h-1zM19,32h1v1h-1zM20,32h1v1h-1zM21,32h1v1h-1zM24,32h1v1h-1zM25,32h1v1h-1zM27,32h1v1h-1zM28,32h1v1h-1zM30,32h1v1h-1zM34,32h1v1h-1zM35,32h1v1h-1zM37,32h1v1h-1zM39,32h1v1h-1zM40,32h1v1h-1zM41,32h1v1h-1zM43,32h1v1h-1zM44,32h1v1h-1zM46,32h1v1h-1zM47,32h1v1h-1zM48,32h1v1h-1zM50,32h1v1h-1zM1,33h1v1h-1zM2,33h1v1h-1zM3,33h1v1h-1zM4,33h1v1h-1zM5,33h1v1h-1zM7,33h1v1h-1zM8,33h1v1h-1zM14,33h1v1h-1zM17,33h1v1h-1zM18,33h1v1h-1zM20,33h1v1h-1zM25,33h1v1h-1zM26,33h1v1h-1zM27,33h1v1h-1zM28,33h1v1h-1zM32,33h1v1h-1zM34,33h1v1h-1zM35,33h1v1h-1zM37,33h1v1h-1zM39,33h1v1h-1zM43,33h1v1h-1zM46,33h1v1h-1zM49,33h1v1h-1zM51,33h1v1h-1zM52,33h1v1h-1zM53,33h1v1h-1zM3,34h1v1h-1zM4,34h1v1h-1zM5,34h1v1h-1zM6,34h1v1h-1zM8,34h1v1h-1zM9,34h1v1h-1zM10,34h1v1h-1zM12,34h1v1h-1zM15,34h1v1h-1zM16,34h1v1h-1zM18,34h1v1h-1zM20,34h1v1h-1zM21,34h1v1h-1zM22,34h1v1h-1zM28,34h1v1h-1zM30,34h1v1h-1zM32,34h1v1h-1zM33,34h1v1h-1zM34,34h1v1h-1zM36,34h1v1h-1zM41,34h1v1h-1zM42,34h1v1h-1zM43,34h1v1h-1zM44,34h1v1h-1zM45,34h1v1h-1zM46,34h1v1h-1zM48,34h1v1h-1zM49,34h1v1h-1zM53,34h1v1h-1zM1,35h1v1h-1zM2,35h1v1h-1zM4,35h1v1h-1zM5,35h1v1h-1zM7,35h1v1h-1zM8,35h1v1h-1zM10,35h1v1h-1zM13,35h1v1h-1zM16,35h1v1h-1zM17,35h1v1h-1zM18,35h1v1h-1zM22,35h1v1h-1zM25,35h1v1h-1zM28,35h1v1h-1zM29,35h1v1h-1zM31,35h1v1h-1zM33,35h1v1h-1zM34,35h1v1h-1zM35,35h1v1h-1zM37,35h1v1h-1zM39,35h1v1h-1zM41,35h1v1h-1zM43,35h1v1h-1zM45,35h1v1h-1zM49,35h1v1h-1zM1,36h1v1h-1zM2,36h1v1h-1zM4,36h1v1h-1zM11,36h1v1h-1zM14,36h1v1h-1zM19,36h1v1h-1zM20,36h1v1h-1zM24,36h1v1h-1zM26,36h1v1h-1zM31,36h1v1h-1zM33,36h1v1h-1zM34,36h1v1h-1zM38,36h1v1h-1zM39,36h1v1h-1zM43,36h1v1h-1zM44,36h1v1h-1zM46,36h1v1h-1zM49,36h1v1h-1zM3,37h1v1h-1zM4,37h1v1h-1zM5,37h1v1h-1zM7,37h1v1h-1zM10,37h1v1h-1zM14,37h1v1h-1zM16,37h1v1h-1zM17,37h1v1h-1zM19,37h1v1h-1zM20,37h1v1h-1zM21,37h1v1h-1zM25,37h1v1h-1zM26,37h1v1h-1zM28,37h1v1h-1zM31,37h1v1h-1zM32,37h1v1h-1zM36,37h1v1h-1zM37,37h1v1h-1zM38,37h1v1h-1zM39,37h1v1h-1zM42,37h1v1h-1zM45,37h1v1h-1zM46,37h1v1h-1zM47,37h1v1h-1zM48,37h1v1h-1zM50,37h1v1h-1zM51,37h1v1h-1zM52,37h1v1h-1zM1,38h1v1h-1zM2,38h1v1h-1zM5,38h1v1h-1zM9,38h1v1h-1zM10,38h1v1h-1zM11,38h1v1h-1zM12,38h1v1h-1zM14,38h1v1h-1zM16,38h1v1h-1zM18,38h1v1h-1zM23,38h1v1h-1zM24,38h1v1h-1zM27,38h1v1h-1zM28,38h1v1h-1zM30,38h1v1h-1zM31,38h1v1h-1zM32,38h1v1h-1zM34,38h1v1h-1zM36,38h1v1h-1zM38,38h1v1h-1zM41,38h1v1h-1zM43,38h1v1h-1zM48,38h1v1h-1zM49,38h1v1h-1zM52,38h1v1h-1zM53,38h1v1h-1zM1,39h1v1h-1zM2,39h1v1h-1zM3,39h1v1h-1zM5,39h1v1h-1zM6,39h1v1h-1zM7,39h1v1h-1zM8,39h1v1h-1zM9,39h1v1h-1zM10,39h1v1h-1zM11,39h1v1h-1zM14,39h1v1h-1zM17,39h1v1h-1zM18,39h1v1h-1zM20,39h1v1h-1zM22,39h1v1h-1zM25,39h1v1h-1zM28,39h1v1h-1zM29,39h1v1h-1zM31,39h1v1h-1zM32,39h1v1h-1zM37,39h1v1h-1zM39,39h1v1h-1zM41,39h1v1h-1zM43,39h1v1h-1zM48,39h1v1h-1zM50,39h1v1h-1zM52,39h1v1h-1zM1,40h1v1h-1zM4,40h1v1h-1zM5,40h1v1h-1zM10,40h1v1h-1zM11,40h1v1h-1zM13,40h1v1h-1zM14,40h1v1h-1zM21,40h1v1h-1zM24,40h1v1h-1zM25,40h1v1h-1zM26,40h1v1h-1zM28,40h1v1h-1zM30,40h1v1h-1zM31,40h1v1h-1zM34,40h1v1h-1zM35,40h1v1h-1zM37,40h1v1h-1zM38,40h1v1h-1zM39,40h1v1h-1zM40,40h1v1h-1zM42,40h1v1h-1zM44,40h1v1h-1zM45,40h1v1h-1zM46,40h1v1h-1zM47,40h1v1h-1zM48,40h1v1h-1zM50,40h1v1h-1zM53,40h1v1h-1zM1,41h1v1h-1zM2,41h1v1h-1zM4,41h1v1h-1zM6,41h1v1h-1zM7,41h1v1h-1zM9,41h1v1h-1zM10,41h1v1h-1zM11,41h1v1h-1zM12,41h1v1h-1zM14,41h1v1h-1zM18,41h1v1h-1zM19,41h1v1h-1zM20,41h1v1h-1zM22,41h1v1h-1zM25,41h1v1h-1zM26,41h1v1h-1zM31,41h1v1h-1zM34,41h1v1h-1zM35,41h1v1h-1zM36,41h1v1h-1zM37,41h1v1h-1zM39,41h1v1h-1zM41,41h1v1h-1zM46,41h1v1h-1zM49,41h1v1h-1zM53,41h1v1h-1zM1,42h1v1h-1zM6,42h1v1h-1zM8,42h1v1h-1zM9,42h1v1h-1zM10,42h1v1h-1zM11,42h1v1h-1zM12,42h1v1h-1zM14,42h1v1h-1zM15,42h1v1h-1zM16,42h1v1h-1zM17,42h1v1h-1zM20,42h1v1h-1zM24,42h1v1h-1zM26,42h1v1h-1zM27,42h1v1h-1zM30,42h1v1h-1zM31,42h1v1h-1zM33,42h1v1h-1zM36,42h1v1h-1zM37,42h1v1h-1zM38,42h1v1h-1zM39,42h1v1h-1zM40,42h1v1h-1zM41,42h1v1h-1zM42,42h1v1h-1zM43,42h1v1h-1zM45,42h1v1h-1zM46,42h1v1h-1zM48,42h1v1h-1zM49,42h1v1h-1zM51,42h1v1h-1zM52,42h1v1h-1zM53,42h1v1h-1zM1,43h1v1h-1zM2,43h1v1h-1zM4,43h1v1h-1zM5,43h1v1h-1zM6,43h1v1h-1zM7,43h1v1h-1zM9,43h1v1h-1zM12,43h1v1h-1zM13,43h1v1h-1zM14,43h1v1h-1zM18,43h1v1h-1zM19,43h1v1h-1zM20,43h1v1h-1zM21,43h1v1h-1zM22,43h1v1h-1zM25,43h1v1h-1zM28,43h1v1h-1zM29,43h1v1h-1zM32,43h1v1h-1zM33,43h1v1h-1zM34,43h1v1h-1zM37,43h1v1h-1zM41,43h1v1h-1zM43,43h1v1h-1zM45,43h1v1h-1zM46,43h1v1h-1zM49,43h1v1h-1zM50,43h1v1h-1zM51,43h1v1h-1zM52,43h1v1h-1zM2,44h1v1h-1zM3,44h1v1h-1zM9,44h1v1h-1zM10,44h1v1h-1zM11,44h1v1h-1zM12,44h1v1h-1zM15,44h1v1h-1zM16,44h1v1h-1zM20,44h1v1h-1zM23,44h1v1h-1zM24,44h1v1h-1zM33,44h1v1h-1zM35,44h1v1h-1zM36,44h1v1h-1zM37,44h1v1h-1zM39,44h1v1h-1zM40,44h1v1h-1zM43,44h1v1h-1zM45,44h1v1h-1zM47,44h1v1h-1zM48,44h1v1h-1zM50,44h1v1h-1zM52,44h1v1h-1zM53,44h1v1h-1zM4,45h1v1h-1zM7,45h1v1h-1zM8,45h1v1h-1zM10,45h1v1h-1zM11,45h1v1h-1zM12,45h1v1h-1zM13,45h1v1h-1zM15,45h1v1h-1zM17,45h1v1h-1zM18,45h1v1h-1zM19,45h1v1h-1zM24,45h1v1h-1zM25,45h1v1h-1zM26,45h1v1h-1zM27,45h1v1h-1zM28,45h1v1h-1zM29,45h1v1h-1zM30,45h1v1h-1zM31,45h1v1h-1zM32,45h1v1h-1zM35,45h1v1h-1zM37,45h1v1h-1zM39,45h1v1h-1zM42,45h1v1h-1zM43,45h1v1h-1zM45,45h1v1h-1zM46,45h1v1h-1zM47,45h1v1h-1zM48,45h1v1h-1zM49,45h1v1h-1zM51,45h1v1h-1zM52,45h1v1h-1zM53,45h1v1h-1zM9,46h1v1h-1zM10,46h1v1h-1zM12,46h1v1h-1zM13,46h1v1h-1zM16,46h1v1h-1zM18,46h1v1h-1zM22,46h1v1h-1zM23,46h1v1h-1zM24,46h1v1h-1zM25,46h1v1h-1zM29,46h1v1h-1zM30,46h1v1h-1zM31,46h1v1h-1zM33,46h1v1h-1zM36,46h1v1h-1zM37,46h1v1h-1zM38,46h1v1h-1zM41,46h1v1h-1zM43,46h1v1h-1zM44,46h1v1h-1zM45,46h1v1h-1zM49,46h1v1h-1zM50,46h1v1h-1zM51,46h1v1h-1zM53,46h1v1h-1zM1,47h1v1h-1zM2,47h1v1h-1zM3,47h1v1h-1zM4,47h1v1h-1zM5,47h1v1h-1zM6,47h1v1h-1zM7,47h1v1h-1zM10,47h1v1h-1zM11,47h1v1h-1zM13,47h1v1h-1zM16,47h1v1h-1zM18,47h1v1h-1zM21,47h1v1h-1zM23,47h1v1h-1zM25,47h1v1h-1zM27,47h1v1h-1zM29,47h1v1h-1zM30,47h1v1h-1zM32,47h1v1h-1zM33,47h1v1h-1zM34,47h1v1h-1zM35,47h1v1h-1zM37,47h1v1h-1zM40,47h1v1h-1zM42,47h1v1h-1zM43,47h1v1h-1zM45,47h1v1h-1zM47,47h1v1h-1zM49,47h1v1h-1zM51,47h1v1h-1zM1,48h1v1h-1zM7,48h1v1h-1zM9,48h1v1h-1zM10,48h1v1h-1zM12,48h1v1h-1zM14,48h1v1h-1zM15,48h1v1h-1zM17,48h1v1h-1zM19,48h1v1h-1zM21,48h1v1h-1zM22,48h1v1h-1zM23,48h1v1h-1zM25,48h1v1h-1zM29,48h1v1h-1zM30,48h1v1h-1zM34,48h1v1h-1zM39,48h1v1h-1zM40,48h1v1h-1zM43,48h1v1h-1zM44,48h1v1h-1zM45,48h1v1h-1zM49,48h1v1h-1zM1,49h1v1h-1zM3,49h1v1h-1zM4,49h1v1h-1zM5,49h1v1h-1zM7,49h1v1h-1zM9,49h1v1h-1zM10,49h1v1h-1zM13,49h1v1h-1zM15,49h1v1h-1zM16,49h1v1h-1zM19,49h1v1h-1zM20,49h1v1h-1zM23,49h1v1h-1zM25,49h1v1h-1zM26,49h1v1h-1zM27,49h1v1h-1zM28,49h1v1h-1zM29,49h1v1h-1zM32,49h1v1h-1zM33,49h1v1h-1zM34,49h1v1h-1zM35,49h1v1h-1zM36,49h1v1h-1zM37,49h1v1h-1zM38,49h1v1h-1zM44,49h1v1h-1zM45,49h1v1h-1zM46,49h1v1h-1zM47,49h1v1h-1zM48,49h1v1h-1zM49,49h1v1h-1zM51,49h1v1h-1zM52,49h1v1h-1zM1,50h1v1h-1zM3,50h1v1h-1zM4,50h1v1h-1zM5,50h1v1h-1zM7,50h1v1h-1zM9,50h1v1h-1zM11,50h1v1h-1zM12,50h1v1h-1zM17,50h1v1h-1zM18,50h1v1h-1zM19,50h1v1h-1zM20,50h1v1h-1zM22,50h1v1h-1zM24,50h1v1h-1zM25,50h1v1h-1zM26,50h1v1h-1zM28,50h1v1h-1zM29,50h1v1h-1zM31,50h1v1h-1zM33,50h1v1h-1zM36,50h1v1h-1zM38,50h1v1h-1zM40,50h1v1h-1zM41,50h1v1h-1zM42,50h1v1h-1zM43,50h1v1h-1zM45,50h1v1h-1zM48,50h1v1h-1zM50,50h1v1h-1zM51,50h1v1h-1zM1,51h1v1h-1zM3,51h1v1h-1zM4,51h1v1h-1zM5,51h1v1h-1zM7,51h1v1h-1zM9,51h1v1h-1zM10,51h1v1h-1zM11,51h1v1h-1zM13,51h1v1h-1zM14,51h1v1h-1zM15,51h1v1h-1zM16,51h1v1h-1zM21,51h1v1h-1zM23,51h1v1h-1zM25,51h1v1h-1zM26,51h1v1h-1zM28,51h1v1h-1zM30,51h1v1h-1zM32,51h1v1h-1zM33,51h1v1h-1zM34,51h1v1h-1zM35,51h1v1h-1zM39,51h1v1h-1zM40,51h1v1h-1zM41,51h1v1h-1zM43,51h1v1h-1zM44,51h1v1h-1zM46,51h1v1h-1zM49,51h1v1h-1zM50,51h1v1h-1zM51,51h1v1h-1zM52,51h1v1h-1zM53,51h1v1h-1zM1,52h1v1h-1zM7,52h1v1h-1zM10,52h1v1h-1zM11,52h1v1h-1zM12,52h1v1h-1zM13,52h1v1h-1zM14,52h1v1h-1zM20,52h1v1h-1zM21,52h1v1h-1zM22,52h1v1h-1zM24,52h1v1h-1zM25,52h1v1h-1zM31,52h1v1h-1zM32,52h1v1h-1zM34,52h1v1h-1zM36,52h1v1h-1zM40,52h1v1h-1zM41,52h1v1h-1zM43,52h1v1h-1zM46,52h1v1h-1zM48,52h1v1h-1zM52,52h1v1h-1zM1,53h1v1h-1zM2,53h1v1h-1zM3,53h1v1h-1zM4,53h1v1h-1zM5,53h1v1h-1zM6,53h1v1h-1zM7,53h1v1h-1zM9,53h1v1h-1zM10,53h1v1h-1zM11,53h1v1h-1zM17,53h1v1h-1zM18,53h1v1h-1zM19,53h1v1h-1zM21,53h1v1h-1zM22,53h1v1h-1zM23,53h1v1h-1zM24,53h1v1h-1zM25,53h1v1h-1zM28,53h1v1h-1zM30,53h1v1h-1zM31,53h1v1h-1zM32,53h1v1h-1zM34,53h1v1h-1zM37,53h1v1h-1zM42,53h1v1h-1zM44,53h1v1h-1zM47,53h1v1h-1zM48,53h1v1h-1zM49,53h1v1h-1zM51,53h1v1h-1z" fill="#000000"/></svg>
+          </div>
+        </div>
+      </div>
+    </article>
+  
+          </div>
+        </div>
+      </div>
+    
+  <script>
+    window.__TOTAL_SHEETS__ = 1;
+    window.__TOTAL_ITEMS__ = 3;
+    window.__IS_RENDER_READY__ = true;
+  </script>
+</body>
+</html>

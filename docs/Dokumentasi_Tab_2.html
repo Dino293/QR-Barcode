@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Dokumentasi Sistem BMN - BPMP Provinsi Jambi</title>
+  <style>
+    body {
+      font-family: "Times New Roman", Times, serif;
+      font-size: 12pt;
+      line-height: 1.25;
+      color: #000000;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 0 20px;
+      text-align: justify;
+    }
+    h1 {
+      font-size: 16pt;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+    }
+    h2 {
+      font-size: 13pt;
+      font-weight: bold;
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 20px;
+    }
+    h3 {
+      font-size: 12pt;
+      font-weight: bold;
+      margin-top: 24px;
+      margin-bottom: 8px;
+      border-bottom: 1px solid #333;
+      padding-bottom: 4px;
+    }
+    h4 {
+      font-size: 12pt;
+      font-weight: bold;
+      margin-top: 14px;
+      margin-bottom: 4px;
+    }
+    p {
+      margin-top: 0;
+      margin-bottom: 10px;
+      text-indent: 28pt;
+    }
+    p.no-indent {
+      text-indent: 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0;
+      font-size: 11pt;
+    }
+    table, th, td {
+      border: 1px solid #444;
+    }
+    th {
+      background-color: #f2f2f2;
+      padding: 6px 10px;
+      text-align: left;
+      font-weight: bold;
+    }
+    td {
+      padding: 6px 10px;
+      vertical-align: top;
+    }
+    ol, ul {
+      margin-top: 4px;
+      margin-bottom: 12px;
+      padding-left: 28pt;
+    }
+    li {
+      margin-bottom: 6px;
+    }
+    .img-container {
+      text-align: center;
+      margin: 18px 0;
+    }
+    .img-container img {
+      max-width: 95%;
+      height: auto;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .caption {
+      font-size: 10pt;
+      font-style: italic;
+      text-align: center;
+      margin-top: 6px;
+      color: #444;
+    }
+    .badge {
+      display: inline-block;
+      background: #e2e8f0;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 10pt;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Sistem Otomasi Inventarisasi & Cetak Barcode BMN Cloud PWA</h1>
+  <h2>Balai Penjaminan Mutu Pendidikan (BPMP) Provinsi Jambi<br>Kementerian Pendidikan Dasar dan Menengah</h2>
+
+  <hr style="border: 0.5px solid #000; margin-bottom: 16px;">
+
+  <table>
+    <tr>
+      <th style="width: 28%;">Parameter</th>
+      <th>Keterangan</th>
+    </tr>
+    <tr>
+      <td><strong>Nama Aplikasi</strong></td>
+      <td>Sistem Otomasi Inventarisasi & Cetak Barcode BMN Cloud PWA</td>
+    </tr>
+    <tr>
+      <td><strong>Instansi / Unit Kerja</strong></td>
+      <td>Balai Penjaminan Mutu Pendidikan (BPMP) Provinsi Jambi</td>
+    </tr>
+    <tr>
+      <td><strong>Kementerian</strong></td>
+      <td>Kementerian Pendidikan Dasar dan Menengah (Kemendikdasmen)</td>
+    </tr>
+    <tr>
+      <td><strong>Pengembang</strong></td>
+      <td>Muhammad Indra (Full-Stack Web Developer & Data Specialist)</td>
+    </tr>
+    <tr>
+      <td><strong>Tautan Aplikasi Live</strong></td>
+      <td><a href="https://qr-barcode-bpmp-jambi.vercel.app" target="_blank">https://qr-barcode-bpmp-jambi.vercel.app</a></td>
+    </tr>
+    <tr>
+      <td><strong>Repository GitHub</strong></td>
+      <td><a href="https://github.com/Dino293/QR-Barcode" target="_blank">https://github.com/Dino293/QR-Barcode</a></td>
+    </tr>
+    <tr>
+      <td><strong>Waktu Pembuatan</strong></td>
+      <td>± 5 s.d. 7 Hari Kerja (Siklus Penuh Rancang, Bangun, Uji, Deploy)</td>
+    </tr>
+  </table>
+
+  <h3>1. DESKRIPSI APLIKASI</h3>
+  <p><strong>Sistem Otomasi Inventarisasi & Cetak Barcode BMN Cloud PWA</strong> merupakan sistem informasi enterprise terintegrasi cloud yang dikembangkan khusus untuk memodernisasi, mempercepat, dan menatausahakan seluruh siklus pencetakan label stiker barcode fisik serta audit inventarisasi Barang Milik Negara (BMN) di lingkungan <strong>Balai Penjaminan Mutu Pendidikan (BPMP) Provinsi Jambi</strong>.</p>
+  <p>Aplikasi ini dirancang untuk mengatasi tantangan pengelolaan lebih dari <strong>14.359 aset fisik</strong> yang tersebar di ratusan ruangan kantor, wisma, laboratorium, dan gedung BPMP Jambi. Dibangun dengan memadukan arsitektur web modern React 18, Vite, basis data cloud PostgreSQL (Supabase), sistem pemindai barcode kamera gawai (html5-qrcode), antrean pesan asinkron (RabbitMQ CloudAMQP), serta background worker Python untuk sinkronisasi data master SIMAN Kementerian Keuangan.</p>
+  <p>Aplikasi ini mengadopsi standar <em>Progressive Web App</em> (PWA), sehingga dapat diakses melalui browser apapun dan dapat diinstal langsung sebagai aplikasi mandiri di perangkat seluler (Android/iOS) maupun komputer kerja (Windows/macOS) dengan kapabilitas <em>offline caching</em>.</p>
+
+  <h3>2. FUNGSI APLIKASI</h3>
+  <p class="no-indent">Sistem ini menjalankan 5 (lima) fungsi operasional pokok:</p>
+  <ol>
+    <li><strong>Fungsi Tata Letak & Pencetakan Label Presisi Milimeter (Zero Spillover)</strong>: Mengatur dan merender stiker barcode pada kertas A4 dengan presisi ukuran milimeter murni sesuai kertas stiker resmi instansi (preset 12 stiker: 98×44mm dan preset 14 stiker: 98×38mm), menjamin label tidak terpotong margin printer.</li>
+    <li><strong>Fungsi Pemindai Cepat (Mobile & Desktop Barcode/QR Scanner)</strong>: Mengaktifkan kamera smartphone atau laptop untuk memindai kode barcode/QR aset secara real-time di ruangan dengan respon audio beep dan auto-lookup ke database.</li>
+    <li><strong>Fungsi Manajemen Data Aset Cloud Terpusat</strong>: Menyimpan dan menyinkronkan 14.359 data BMN secara aman di cloud Supabase PostgreSQL yang dapat diakses oleh operator tanpa takut kehilangan data lokal.</li>
+    <li><strong>Fungsi Seleksi Cepat Ruangan & Filter Fleksibel</strong>: Menyaring data aset secara dinamis berdasarkan nama/kode ruangan, NUP, kode barang, maupun nama barang untuk memudahkan pencetakan bertahap per ruangan kerja.</li>
+    <li><strong>Fungsi Otomatisasi Antrean & Notifikasi Email</strong>: Menjalankan pemrosesan data berat (sinkronisasi SIMAN Kemenkeu) di latar belakang secara asinkron via RabbitMQ dan mengirimkan ringkasan laporan hasil pemrosesan ke email petugas melalui Mailtrap SMTP.</li>
+  </ol>
+
+  <h3>3. MANFAAT APLIKASI BAGI INSTANSI</h3>
+  <ol>
+    <li><strong>Efisiensi Waktu Pencetakan hingga 90%</strong>: Proses penyiapan dan pencetakan ribuan label stiker aset yang semula memakan waktu berhari-hari kini dapat diselesaikan dalam hitungan menit secara otomatis.</li>
+    <li><strong>Efisiensi Anggaran & Kertas (Zero Waste)</strong>: Menghilangkan risiko stiker terbuang akibat salah cetak atau margin bergeser berkat fitur <em>Print Range Selection</em> dan kalibrasi milimeter.</li>
+    <li><strong>Nol Biaya Infrastruktur Server (Zero Server Cost)</strong>: Memanfaatkan perpaduan cloud tier berkinerja tinggi (Vercel, Supabase, CloudAMQP, Mailtrap, dan GitHub Actions) tanpa membebani biaya langganan server bulanan instansi.</li>
+    <li><strong>Akurasi Data Fisik Tinggi</strong>: Mencegah kesalahan pengetikan nomor registrasi dan kode satker karena barcode Code 128 dan QR Code digenerate otomatis dari basis data resmi.</li>
+    <li><strong>Portabilitas dan Kemudahan Audit Lapangan</strong>: Petugas sensus BMN cukup membawa smartphone untuk melakukan inspeksi berkala di seluruh ruangan dan memverifikasi keberadaan barang secara instan.</li>
+  </ol>
+
+  <h3>4. ESTIMASI & WAKTU PEMBUATAN (DEVELOPMENT TIMELINE)</h3>
+  <p class="no-indent">Berdasarkan riwayat repositori dan siklus pengembangan, sistem diselesaikan dalam waktu <strong>± 5 hingga 7 hari kerja</strong> dengan rincian:</p>
+  <table>
+    <tr>
+      <th style="width: 22%;">Tahapan</th>
+      <th>Aktivitas & Output Pekerjaan</th>
+      <th style="width: 15%; text-align: center;">Durasi</th>
+    </tr>
+    <tr>
+      <td><strong>Tahap 1: Analisis & Rancang</strong></td>
+      <td>Analisis alur penatausahaan BMN BPMP Jambi, pengukuran fisik presisi kertas stiker (margin atas, bawah, jarak horizontal/vertikal), dan perancangan skema data aset.</td>
+      <td style="text-align: center;">Hari 1</td>
+    </tr>
+    <tr>
+      <td><strong>Tahap 2: Frontend & Print Engine</strong></td>
+      <td>Pembangunan antarmuka responsif (React 18 + Vite + Tailwind CSS), perancangan komponen lembar A4 fisik, dan penerapan media query cetak bebas spillover.</td>
+      <td style="text-align: center;">Hari 2</td>
+    </tr>
+    <tr>
+      <td><strong>Tahap 3: PWA & Scanner Kamera</strong></td>
+      <td>Konfigurasi Progressive Web App dengan Workbox caching, integrasi scanner kamera (html5-qrcode), dan efek synthesizer audio beep.</td>
+      <td style="text-align: center;">Hari 3</td>
+    </tr>
+    <tr>
+      <td><strong>Tahap 4: Cloud DB & Migrasi Data</strong></td>
+      <td>Migrasi massal 14.359 data master Excel ke Supabase PostgreSQL, pembuatan indeks relasional cepat, filter ruangan, dan spreadsheet editor web.</td>
+      <td style="text-align: center;">Hari 4</td>
+    </tr>
+    <tr>
+      <td><strong>Tahap 5: Worker & Notifikasi</strong></td>
+      <td>Implementasi background worker RabbitMQ (CloudAMQP), integrasi email report Mailtrap SMTP, dan jadwal otomatis mingguan GitHub Actions Cron.</td>
+      <td style="text-align: center;">Hari 5</td>
+    </tr>
+    <tr>
+      <td><strong>Tahap 6 - 7: Uji & Deployment</strong></td>
+      <td>Uji cetak printer fisik di kantor, standardisasi kode satker dan NUP, evaluasi responsivitas mobile, dan deployment production Vercel.</td>
+      <td style="text-align: center;">Hari 6 - 7</td>
+    </tr>
+  </table>
+
+  <h3>5. FITUR-FITUR UTAMA SISTEM</h3>
+  <ul>
+    <li><strong>1. Preset Cetak Presisi Kertas A4 (98×44mm & 98×38mm)</strong>: Menjamin posisi barcode presisi pada grid kertas stiker standar kantor tanpa terpotong batas printer.</li>
+    <li><strong>2. Progressive Web App (PWA) Mandiri</strong>: Dapat dipasang langsung di layar utama smartphone atau laptop dengan mode fullscreen native.</li>
+    <li><strong>3. Pemindai Kamera Barcode & QR Code</strong>: Mendukung scan langsung via kamera belakang gawai atau upload gambar dari galeri, dilengkapi bunyi beep konfirmasi.</li>
+    <li><strong>4. Basis Data Cloud Terpusat (Supabase PostgreSQL)</strong>: Menyimpan 14.359 baris data BMN dengan pencarian cepat dan keamanan tingkat tinggi.</li>
+    <li><strong>5. Filter Cepat Ruangan & Pencarian Instan</strong>: Dropdown daftar ruangan yang otomatis terisi dari dataset serta kotak pencarian multi-kriteria.</li>
+    <li><strong>6. Pemilih Rentang Halaman Cetak (Print Range Scope)</strong>: Memilih mencetak lembar tertentu saja (misal: lembar 1-5) guna menghemat lembaran stiker.</li>
+    <li><strong>7. Editor Spreadsheet Interaktif</strong>: Memperbaiki atau menambah data barang BMN langsung pada tabel web tanpa membuka software lain.</li>
+    <li><strong>8. Pengunggah Berkas Excel (.xlsx SheetJS)</strong>: Mendukung pembacaan berkas Excel inventaris baru secara instan dan validasi kolom otomatis.</li>
+    <li><strong>9. Antrean Pesan Asinkron (RabbitMQ)</strong>: Pemrosesan tugas latar belakang multithreaded agar kinerja aplikasi web tetap ringan.</li>
+    <li><strong>10. Otomatisasi Cloud Terjadwal & Laporan Email</strong>: Worker cron mingguan di cloud dan pelaporan otomatis ringkasan ke inbox email operator.</li>
+  </ul>
+
+  <h3>6. FOTO & SCREENSHOT APLIKASI</h3>
+  <div class="img-container">
+    <img src="screenshots/01_dashboard_cetak_barcode.jpg" alt="Dashboard Utama Cetak Barcode BMN">
+    <div class="caption">Gambar 1: Antarmuka Dashboard Utama & Layout Lembar Cetak A4 Stiker Barcode BMN BPMP Provinsi Jambi</div>
+  </div>
+
+  <div class="img-container">
+    <img src="screenshots/02_pemindai_scanner_modal.jpg" alt="Pemindai Barcode & QR Code Kamera">
+    <div class="caption">Gambar 2: Modal Pemindai Kamera Barcode & QR Code untuk Audit Fisik di Ruangan</div>
+  </div>
+
+  <h3>7. SPESIFIKASI TEKNIS & REFERENSI REPOSITORY GITHUB</h3>
+  <table>
+    <tr>
+      <th style="width: 30%;">Komponen</th>
+      <th>Spesifikasi & Pustaka</th>
+    </tr>
+    <tr>
+      <td>Frontend Framework</td>
+      <td>React 18, Vite 5, Tailwind CSS</td>
+    </tr>
+    <tr>
+      <td>PWA & Caching</td>
+      <td>Vite Plugin PWA, Workbox Service Worker</td>
+    </tr>
+    <tr>
+      <td>Barcode & QR Code Engine</td>
+      <td>JsBarcode (Code 128), qrcode.react (SVG), html5-qrcode</td>
+    </tr>
+    <tr>
+      <td>Basis Data Cloud</td>
+      <td>Supabase Cloud (PostgreSQL 15 dengan Relational Indexing)</td>
+    </tr>
+    <tr>
+      <td>Message Broker & Worker</td>
+      <td>CloudAMQP (RabbitMQ 3.12), Python 3.11 (Pika, ReportLab)</td>
+    </tr>
+    <tr>
+      <td>Layanan Surel (SMTP)</td>
+      <td>Mailtrap SMTP Gateway</td>
+    </tr>
+    <tr>
+      <td>Hosting & CI/CD</td>
+      <td>Vercel Production, GitHub Actions CI/CD & Cron</td>
+    </tr>
+    <tr>
+      <td>Repository Resmi</td>
+      <td><a href="https://github.com/Dino293/QR-Barcode" target="_blank">https://github.com/Dino293/QR-Barcode</a></td>
+    </tr>
+    <tr>
+      <td>Tautan Aplikasi Live</td>
+      <td><a href="https://qr-barcode-bpmp-jambi.vercel.app" target="_blank">https://qr-barcode-bpmp-jambi.vercel.app</a></td>
+    </tr>
+  </table>
+
+</body>
+</html>
