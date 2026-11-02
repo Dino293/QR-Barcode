@@ -71,9 +71,10 @@ def run_crosscheck():
     print(f"Total baris data di Excel: {total_rows:,}")
     print(f"Headers ({len(headers)}): {headers}\n")
     
-    # Column indices:
-    # 1: Kode Satker, 2: Uraian Satker, 3: Kode Barang, 4: NUP, 5: Nama Barang, 8: Merk/Tipe, 9: Tgl Perolehan,
-    # 20: Kode Ruangan, 21: Nama Ruangan, 25: Tahun, 27: QR, 28: Nama Bangunan
+    # Column indices (setelah relokasi Kode Ruangan ke Col B dan Nama Ruangan ke Col C):
+    # 1: Kode Ruangan (B), 2: Nama Ruangan (C), 3: Kode Satker (D), 4: Uraian Satker (E),
+    # 5: Kode Barang (F), 6: NUP (G), 7: Nama Barang (H), 10: Merk/Tipe (K), 11: Tgl Perolehan (L),
+    # 25: Tahun (Z), 27: QR (AB), 28: Nama Bangunan (AC)
     
     stats = {
         'empty_satker': [],
@@ -95,14 +96,14 @@ def run_crosscheck():
     }
     
     for r_idx, row in enumerate(rows_data, start=2):
-        satker = str(row[1] or '').strip()
-        kd_brg = str(row[3] or '').strip()
-        nup = str(row[4] or '').strip()
-        nm_brg = str(row[5] or '').strip()
-        merk = str(row[8] or '').strip() if len(row) > 8 else ''
-        tgl = str(row[9] or '').strip() if len(row) > 9 else ''
-        kd_r = str(row[20] or '').strip() if len(row) > 20 else ''
-        nm_r = str(row[21] or '').strip() if len(row) > 21 else ''
+        kd_r = str(row[1] or '').strip() if len(row) > 1 else ''
+        nm_r = str(row[2] or '').strip() if len(row) > 2 else ''
+        satker = str(row[3] or '').strip() if len(row) > 3 else ''
+        kd_brg = str(row[5] or '').strip() if len(row) > 5 else ''
+        nup = str(row[6] or '').strip() if len(row) > 6 else ''
+        nm_brg = str(row[7] or '').strip() if len(row) > 7 else ''
+        merk = str(row[10] or '').strip() if len(row) > 10 else ''
+        tgl = str(row[11] or '').strip() if len(row) > 11 else ''
         tahun = str(row[25] or '').strip() if len(row) > 25 else ''
         qr = str(row[27] or '').strip() if len(row) > 27 else ''
         nm_b = str(row[28] or '').strip() if len(row) > 28 else ''

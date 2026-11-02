@@ -13,12 +13,12 @@ year_2000_count = 0
 sample_2000 = []
 
 for idx, r in enumerate(rows[1:], start=2):
-    satker = str(r[1] or '').strip()
-    tgl = str(r[9] or '').strip()
+    satker = str(r[3] or '').strip()
+    tgl = str(r[11] or '').strip()
     th = str(r[25] or '').strip()
-    kode_barang = str(r[2] or '').strip()
-    nama_barang = str(r[4] or '').strip()
-    nup = str(r[3] or '').strip()
+    kode_barang = str(r[5] or '').strip()
+    nama_barang = str(r[7] or '').strip()
+    nup = str(r[6] or '').strip()
 
     # extract year
     year = ""

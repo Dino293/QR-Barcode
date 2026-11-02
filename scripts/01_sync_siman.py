@@ -83,8 +83,8 @@ def run_sync(force_recheck=False):
         if idx == 0:
             continue
         row_num = idx + 1
-        kd = str(row[3]).strip() if len(row) > 3 and row[3] is not None else ""
-        nup = str(row[4]).strip() if len(row) > 4 and row[4] is not None else ""
+        kd = str(row[5]).strip() if len(row) > 5 and row[5] is not None else ""
+        nup = str(row[6]).strip() if len(row) > 6 and row[6] is not None else ""
         qr_existing = str(row[27]).strip() if len(row) > 27 and row[27] is not None else ""
 
         # Abaikan baris yang tidak memiliki Kode Barang

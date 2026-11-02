@@ -99,14 +99,14 @@ def migrate_data(supabase_key=None):
             skipped += 1
             continue
 
-        kode_barang = str(row[3] or "").strip()
+        kode_barang = str(row[5] or "").strip()
         if not kode_barang or kode_barang == "None":
             skipped += 1
             continue
 
-        nup = bersihkan_angka(row[4], default=1)
-        nama_barang = str(row[5] or "Barang BMN").strip()
-        tgl_perolehan = str(row[9] or "").strip()
+        nup = bersihkan_angka(row[6], default=1)
+        nama_barang = str(row[7] or "Barang BMN").strip()
+        tgl_perolehan = str(row[11] or "").strip()
         tahun = bersihkan_angka(row[25], default=None)
 
         if not tahun and tgl_perolehan and len(tgl_perolehan) >= 4:
@@ -120,20 +120,20 @@ def migrate_data(supabase_key=None):
 
         record = {
             "no_urut": bersihkan_angka(row[0], default=idx),
-            "kode_satker": str(row[1] or "138041000693242000KD").strip(),
-            "uraian_satker": str(row[2] or "BPMP PROVINSI JAMBI").strip(),
+            "kode_ruangan": str(row[1] or "").strip(),
+            "nama_ruangan": str(row[2] or "").strip(),
+            "kode_satker": str(row[3] or "138041000693242000KD").strip(),
+            "uraian_satker": str(row[4] or "BPMP PROVINSI JAMBI").strip(),
             "kode_barang": kode_barang,
             "nup": nup,
             "nama_barang": nama_barang,
-            "merk_tipe": str(row[8] or "-").strip(),
+            "merk_tipe": str(row[10] or "-").strip(),
             "tgl_perolehan": tgl_perolehan,
             "tahun": tahun,
-            "kuantitas": bersihkan_angka(row[10], default=1),
-            "kondisi": str(row[11] or "").strip(),
-            "harga_barang": str(row[12] or "").strip(),
-            "status_penggunaan": str(row[13] or "").strip(),
-            "kode_ruangan": str(row[20] or "").strip(),
-            "nama_ruangan": str(row[21] or "").strip(),
+            "kuantitas": bersihkan_angka(row[12], default=1),
+            "kondisi": str(row[13] or "").strip(),
+            "harga_barang": str(row[14] or "").strip(),
+            "status_penggunaan": str(row[15] or "").strip(),
             "jenis_bangunan": str(row[22] or "").strip(),
             "status_kodefikasi": str(row[23] or "").strip(),
             "status_inventarisasi": str(row[24] or "").strip(),

@@ -105,8 +105,8 @@ def run_audit():
     for idx, row in enumerate(ws.iter_rows(values_only=True)):
         if idx == 0:
             continue
-        kd_r = str(row[20] or '').strip() if len(row) > 20 else ''
-        nm_r = str(row[21] or '').strip() if len(row) > 21 else ''
+        kd_r = str(row[1] or '').strip() if len(row) > 1 else ''
+        nm_r = str(row[2] or '').strip() if len(row) > 2 else ''
 
         if not kd_r and not nm_r:
             continue

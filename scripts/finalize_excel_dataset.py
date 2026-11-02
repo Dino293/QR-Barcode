@@ -32,13 +32,13 @@ def finalize():
     
     updated_years = 0
     for r in range(2, ws.max_row + 1):
-        kd = ws.cell(row=r, column=4).value
+        kd = ws.cell(row=r, column=6).value
         if not kd:
             continue
             
         cur_t = ws.cell(row=r, column=26).value
-        tgl = ws.cell(row=r, column=10).value
-        satker = ws.cell(row=r, column=2).value
+        tgl = ws.cell(row=r, column=12).value
+        satker = ws.cell(row=r, column=4).value
         
         yr = evaluate_year(cur_t, tgl, satker)
         if str(cur_t).startswith('=') or cur_t is None or cur_t != yr:

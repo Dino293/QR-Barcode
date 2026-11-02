@@ -66,11 +66,11 @@ def clean_and_repair():
     ws = wb['Database'] if 'Database' in wb.sheetnames else wb.active
     
     # Pastikan Header Baris 1:
-    # Kolom 9 (I): Merk/Tipe
+    # Kolom 11 (K): Merk/Tipe
     # Kolom 28 (AB): QR
     # Kolom 29 (AC): Nama Bangunan
-    if ws.cell(1, 9).value is None:
-        ws.cell(1, 9, "Merk/Tipe")
+    if ws.cell(1, 11).value is None:
+        ws.cell(1, 11, "Merk/Tipe")
     if ws.cell(1, 28).value is None:
         ws.cell(1, 28, "QR")
     if ws.cell(1, 29).value is None:
@@ -83,27 +83,27 @@ def clean_and_repair():
     satker_fixed = 0
     
     for row_idx in range(2, ws.max_row + 1):
-        kd_brg = ws.cell(row=row_idx, column=4).value
+        kd_brg = ws.cell(row=row_idx, column=6).value
         if kd_brg is None or str(kd_brg).strip() == '':
             continue
             
         total_processed += 1
         kd_brg = str(kd_brg).strip()
-        nup = str(ws.cell(row=row_idx, column=5).value or '1').strip()
+        nup = str(ws.cell(row=row_idx, column=7).value or '1').strip()
         
-        # 1. Satker
-        satker_val = ws.cell(row=row_idx, column=2).value
+        # 1. Satker (Kolom 4 / D)
+        satker_val = ws.cell(row=row_idx, column=4).value
         if not satker_val or str(satker_val).strip() == '':
-            ws.cell(row=row_idx, column=2, value="138041000693242000KD")
+            ws.cell(row=row_idx, column=4, value="138041000693242000KD")
             satker_fixed += 1
             
-        # 2. Merk / Tipe
-        merk_val = ws.cell(row=row_idx, column=9).value
+        # 2. Merk / Tipe (Kolom 11 / K)
+        merk_val = ws.cell(row=row_idx, column=11).value
         if merk_val is None or str(merk_val).strip() in ('', 'None', 'null'):
-            ws.cell(row=row_idx, column=9, value="-")
+            ws.cell(row=row_idx, column=11, value="-")
             merk_repaired += 1
             
-        # 3. QR dari SIMAN Cache jika kosong
+        # 3. QR dari SIMAN Cache jika kosong (Kolom 28 / AB)
         qr_val = ws.cell(row=row_idx, column=28).value
         cache_key = f"{kd_brg}_{nup}"
         siman_qr = cache.get(cache_key, "")
@@ -112,8 +112,8 @@ def clean_and_repair():
             qr_synced += 1
             
         # 4. Nama Bangunan (Kolom 29 / AC)
-        kd_r = str(ws.cell(row=row_idx, column=21).value or '').strip()
-        nm_r = str(ws.cell(row=row_idx, column=22).value or '').strip()
+        kd_r = str(ws.cell(row=row_idx, column=2).value or '').strip()
+        nm_r = str(ws.cell(row=row_idx, column=3).value or '').strip()
         curr_b = str(ws.cell(row=row_idx, column=29).value or '').strip()
         canonical_b = get_building_name(kd_r, nm_r)
         

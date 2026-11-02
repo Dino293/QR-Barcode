@@ -63,8 +63,8 @@ for (let i = 1; i < rows.length; i++) {
   const row = rows[i];
   if (!row || row.length < 6) continue;
 
-  const kd_b = String(row[3] || '').trim();
-  const nup = String(row[4] || '').trim();
+  const kd_b = String(row[5] || '').trim();
+  const nup = String(row[6] || '').trim();
   const qr = String(row[27] || '').trim();
 
   const cacheKey = `${kd_b}_${nup}`;
@@ -74,8 +74,8 @@ for (let i = 1; i < rows.length; i++) {
     simanMismatch++;
   }
 
-  const kd_r = String(row[20] || '').trim();
-  const nm_r = String(row[21] || '').trim();
+  const kd_r = String(row[1] || '').trim();
+  const nm_r = String(row[2] || '').trim();
   const bg = getBuildingName(kd_r, nm_r);
 
   let roomTitle = '';

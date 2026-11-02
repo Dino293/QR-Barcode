@@ -498,8 +498,8 @@ def main():
     rooms_data = {}
     for row in ws.iter_rows(min_row=2, values_only=True):
         if not row or len(row) < 6: continue
-        kd_r = str(row[20] or '').strip()
-        nm_r = str(row[21] or '').strip()
+        kd_r = str(row[1] or '').strip()
+        nm_r = str(row[2] or '').strip()
         bg = get_building_name(kd_r, nm_r)
 
         if bg:
@@ -518,18 +518,18 @@ def main():
         if not any(t.lower() in full_match_str for t in target_args):
             continue
 
-        satker = str(row[1] or '138041000693242000KD').strip()
-        tgl_perolehan = str(row[9] or '').strip() if len(row) > 9 and row[9] is not None else ''
-        tahun = extract_year(row[25] if len(row) > 25 else '', row[9] if len(row) > 9 else '', satker)
+        satker = str(row[3] or '138041000693242000KD').strip()
+        tgl_perolehan = str(row[11] or '').strip() if len(row) > 11 and row[11] is not None else ''
+        tahun = extract_year(row[25] if len(row) > 25 else '', row[11] if len(row) > 11 else '', satker)
 
         item = {
             'kode_satker': satker,
             'tahun': tahun,
             'tgl_perolehan': tgl_perolehan,
-            'kode_barang': str(row[3] or '-').strip(),
-            'nup': str(row[4] or '1').strip(),
-            'nama_barang': str(row[5] or 'Barang BMN').strip(),
-            'merk_tipe': str(row[8] or '-').strip() if len(row) > 8 and row[8] else '-',
+            'kode_barang': str(row[5] or '-').strip(),
+            'nup': str(row[6] or '1').strip(),
+            'nama_barang': str(row[7] or 'Barang BMN').strip(),
+            'merk_tipe': str(row[10] or '-').strip() if len(row) > 10 and row[10] else '-',
             'custom_barcode': str(row[27] or '').strip() if len(row) > 27 else '',
             'ruangan': room_title
         }

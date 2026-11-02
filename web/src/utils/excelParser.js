@@ -123,15 +123,15 @@ function resolveBuildingName(kd, nm, colBangunan) {
 
 function mapHeaders(headerRow) {
   const map = {
-    kode_satker: 1, // B
-    kode_barang: 3, // D
-    nup: 4, // E
-    nama_barang: 5, // F
-    merk_tipe: 8, // I
+    kd_ruangan: 1, // B
+    nm_ruangan: 2, // C
+    kode_satker: 3, // D
+    kode_barang: 5, // F
+    nup: 6, // G
+    nama_barang: 7, // H
+    merk_tipe: 10, // K
+    tgl_perolehan: 11, // L
     tahun: 25, // Z
-    tgl_perolehan: 9, // J
-    kd_ruangan: 20, // U
-    nm_ruangan: 21, // V
     qr: 27, // AB
     nm_bangunan: 28 // AC
   };

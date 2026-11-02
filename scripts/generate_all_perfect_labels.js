@@ -117,8 +117,8 @@ for (let i = 1; i < rows.length; i++) {
   if (!row || row.length < 6) continue;
   totalRecords++;
 
-  const kd_r = String(row[20] || '').trim();
-  const nm_r = String(row[21] || '').trim();
+  const kd_r = String(row[1] || '').trim();
+  const nm_r = String(row[2] || '').trim();
   const bg = getBuildingName(kd_r, nm_r);
 
   let roomTitle = '';
@@ -136,7 +136,7 @@ for (let i = 1; i < rows.length; i++) {
 
   const cleanFilename = sanitizeFilename(roomTitle, 65);
 
-  let rawSatker = String(row[1] || '138041000693242000KD').trim();
+  let rawSatker = String(row[3] || '138041000693242000KD').trim();
   let embeddedYear = '';
   const suffixMatch = rawSatker.match(/\.(19\d{2}|20\d{2})$/);
   if (suffixMatch) {
@@ -150,7 +150,7 @@ for (let i = 1; i < rows.length; i++) {
     const my = String(rawTahun).match(/\b(19\d{2}|20\d{2})\b/);
     if (my) resolvedYear = my[1];
   }
-  const rawTgl = row[9];
+  const rawTgl = row[11];
   if (!resolvedYear && rawTgl) {
     const mt = String(rawTgl).match(/\b(19\d{2}|20\d{2})\b/);
     if (mt) resolvedYear = mt[1];
@@ -165,10 +165,10 @@ for (let i = 1; i < rows.length; i++) {
     kode_satker: rawSatker,
     tahun: resolvedYear,
     tgl_perolehan: String(rawTgl || ''),
-    kode_barang: String(row[3] || '-').trim(),
-    nup: String(row[4] || '1').trim(),
-    nama_barang: String(row[5] || 'Barang BMN').trim(),
-    merk_tipe: String(row[8] || '-').trim() || '-',
+    kode_barang: String(row[5] || '-').trim(),
+    nup: String(row[6] || '1').trim(),
+    nama_barang: String(row[7] || 'Barang BMN').trim(),
+    merk_tipe: String(row[10] || '-').trim() || '-',
     ruangan: roomTitle,
     satkerText: satkerText
   };

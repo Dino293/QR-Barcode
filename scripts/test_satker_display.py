@@ -10,8 +10,8 @@ total_missing_satker_year = 0
 year_distribution = {}
 
 for idx, r in enumerate(rows[1:], start=2):
-    raw_satker = str(r[1] or '138041000693242000KD').strip()
-    tgl = str(r[9] or '').strip()
+    raw_satker = str(r[3] or '138041000693242000KD').strip()
+    tgl = str(r[11] or '').strip()
     th = str(r[25] or '').strip()
 
     # Suffix strip

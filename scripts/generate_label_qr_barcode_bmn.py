@@ -147,8 +147,8 @@ for row in ws.iter_rows(min_row=2, values_only=True):
         continue
     total_records += 1
 
-    kd_r = str(row[20] or '').strip() if len(row) > 20 else ''
-    nm_r = str(row[21] or '').strip() if len(row) > 21 else ''
+    kd_r = str(row[1] or '').strip() if len(row) > 1 else ''
+    nm_r = str(row[2] or '').strip() if len(row) > 2 else ''
     bg = get_building_name(kd_r, nm_r)
 
     if bg:
@@ -164,23 +164,23 @@ for row in ws.iter_rows(min_row=2, values_only=True):
 
     clean_filename = sanitize_filename(room_title, 65)
 
-    raw_satker = str(row[1] or '138041000693242000KD').strip()
+    raw_satker = str(row[3] or '138041000693242000KD').strip() if len(row) > 3 else '138041000693242000KD'
     suffix_match = re.search(r'\.(19\d{2}|20\d{2})$', raw_satker)
     if suffix_match:
         raw_satker = raw_satker[:suffix_match.start()].strip()
 
-    tgl_perolehan = str(row[9] or '').strip() if len(row) > 9 and row[9] is not None else ''
-    tahun = extract_year(row[25] if len(row) > 25 else '', row[9] if len(row) > 9 else '', raw_satker)
+    tgl_perolehan = str(row[11] or '').strip() if len(row) > 11 and row[11] is not None else ''
+    tahun = extract_year(row[25] if len(row) > 25 else '', row[11] if len(row) > 11 else '', raw_satker)
 
     if tahun:
         satker_display = f"{raw_satker}.{tahun}"
     else:
         satker_display = raw_satker
 
-    kode_barang = str(row[3] or '-').strip()
-    nup = str(row[4] or '1').strip()
-    nama_barang = str(row[5] or 'Barang BMN').strip()
-    merk_tipe = str(row[8] or '-').strip() if len(row) > 8 and row[8] else '-'
+    kode_barang = str(row[5] or '-').strip() if len(row) > 5 else '-'
+    nup = str(row[6] or '1').strip() if len(row) > 6 else '1'
+    nama_barang = str(row[7] or 'Barang BMN').strip() if len(row) > 7 else 'Barang BMN'
+    merk_tipe = str(row[10] or '-').strip() if len(row) > 10 and row[10] else '-'
     qr_val = str(row[27] or '').strip() if len(row) > 27 else ''
 
     qr_filename = os.path.basename(qr_val)
